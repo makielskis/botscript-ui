@@ -403,6 +403,22 @@ $(function() {
       this.slider.on("slide", this.callback(this.onSlide));
     },
 
+    disableInput: function(disable) {
+      // show/hide list
+      disable ? this.placeholders.show() : this.placeholders.hide();
+      disable ? this.slider.hide() : this.slider.show();
+      disable ? this.sliderDisplay.hide() : this.sliderDisplay.show();
+    },
+
+    onSlide: function() {
+      this.sliderDisplay.text(this.slider.slider("value"));
+    },
+
+    onSlideChange: function() {
+      this.disableInput(true);
+      this.onChange(this.slider.slider("value"));
+    },
+
     update: function(newValue) {
       if (_.isNumber(newValue)) {
         this.slider.slider("value", newValue);
