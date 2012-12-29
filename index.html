@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset='utf-8'>
+  <title>UI - NEXT</title>
+  <link href="css/bootstrap.css" rel="stylesheet">
+  <link href="css/font-awesome.css" rel="stylesheet">
+  <link href="css/smoothness/jquery-ui-1.9.2.custom.css" rel="stylesheet">
+  <link href="css/fonts.css" rel="stylesheet">
+  <link href="css/scrollbar.css" rel="stylesheet">
+  <style type="text/css">
+    body {
+      margin-top: 5%;
+      background-color: #eee;
+    }
+
+    input, button {
+      color: #333;
+    }
+
+    #app {
+      background-color: white;
+      padding: 20px;
+      box-shadow: rgba(0, 0, 0, 0.2) 0px 2px 6px 0px;
+    }
+
+    #app-title {
+      background-color: #222;
+      color: white;
+      width: 100%;
+      margin-top: -20px;
+      margin-left: -20px;
+      margin-bottom: 20px;
+      padding: 5px 20px;
+      box-shadow: rgba(0, 0, 0, 0.2) 0px 2px 6px 0px;
+    }
+
+    #app-title span {
+      font-size: 14pt;
+      font-weight: bold;
+      vertical-align: middle;
+    }
+
+    #invader {
+      height: 24px;
+      width: 24px;
+      margin-right: 10px;
+      vertical-align: middle;
+    }
+
+    .placeholder {
+      border:.25em solid rgba(0,0,0,0.9);
+      opacity:.9;
+      border-top:.25em solid rgba(0,0,0,0);
+      border-bottom:.25em solid rgba(0,0,0,0);
+      border-radius:16px;
+      width:1em;
+      height:1em;
+      -o-animation:spin 1s infinite linear;
+      -moz-animation:spin 1s infinite linear;
+      -webkit-animation:spin 1s infinite linear;
+    }
+
+    @-moz-keyframes spin {
+      0% { -moz-transform:rotate(0deg); }
+      100% { -moz-transform:rotate(360deg); }
+    }
+
+    @-webkit-keyframes spin {
+      0% { -webkit-transform:rotate(0deg); }
+      100% { -webkit-transform:rotate(360deg); }
+    }
+
+    @-o-keyframes spin {
+      0% { -o-transform:rotate(0deg); }
+      100% { -o-transform:rotate(360deg); }
+    }
+
+    .reorder-list:empty {
+      display: none;
+    }
+
+    .reorder-list li {
+      cursor: pointer;
+      padding: 4px;
+      margin-top: 2px;
+      margin-bottom: 2px;
+    }
+
+    .reorder-list li:first-child {
+      margin-top: 0;
+    }
+
+    .remove-handle {
+      float: right;
+      cursor: pointer;
+    }
+
+    .handle {
+      cursor: pointer;
+    }
+
+    .widgetcontainer .row-fluid {
+      margin: 10px 0;
+    }
+
+    .slider-input {
+      margin: 10px 0;
+    }
+
+    .drop-indicator {
+      padding: 3px !important;
+      border: 1px dashed #aaa;
+      text-align: center;
+      text-shadow: 0px 1px 0px rgba(255,255,255,.5);
+      font-size: 17pt;
+      color: #aaa;
+    }
+
+    .input-append button {
+      float: left;
+    }
+
+    .input-append input {
+      float: left;
+      box-sizing: border-box;
+      -moz-box-sizing: border-box;
+      -webkit-box-sizing: border-box;
+      -o-box-sizing: border-box;
+      -ms-box-sizing: border-box;
+    }
+
+    .btn {
+      background: #F3F3F3;
+      background: linear-gradient(top,#F5F5F5,#F1F1F1);
+      background: -webkit-linear-gradient(top,#F5F5F5,#F1F1F1);
+      background: -moz-linear-gradient(top,#F5F5F5,#F1F1F1);
+      background: -o-linear-gradient(top,#F5F5F5,#F1F1F1);
+      background: -ms-linear-gradient(top,#F5F5F5,#F1F1F1);
+      border: 1px solid #ddd;
+    }
+
+    .btn:hover {
+      border-color: #ccc;
+      box-shadow: rgba(0, 0, 0, 0.1) 0px 1px 2px 0px;
+    }
+
+    .btn.active {
+      box-shadow: inset 0 1px 2px rgba(0, 0, 0, .1);
+      background: -webkit-gradient(linear,left top,left bottom,from(#EEEEEE),to(#DEDEDE));
+    }
+
+    input {
+      border: 1px solid #ddd;
+      padding: 0 5px;
+    }
+
+    .input-append input {
+      border-right: 0;
+    }
+
+    .input-append button {
+      margin: 0 !important;
+    }
+
+    .log {
+      font-family: monospace;
+      color: #ddd;
+      background-color: #000;
+      min-height: 10em;
+      max-height: 20em;
+      padding: 10px;
+      overflow: auto;
+    }
+  </style>
+</head>
+<body>
+  <div class="container" id="app">
+    <div id="app-title">
+      <svg xmlns="http://www.w3.org/2000/svg" id="invader">
+        <g transform="scale(3, 3)">
+          <path d="m 3,0 0,1 -1,0 0,1 -1,0 0,1 -1,0 0,1 0,1 2,0 0,1 1,0 0,-1 2,0 0,1 1,0 0,-1 2,0 0,-1 0,-1 -1,0 0,-1 -1,0 0,-1 -1,0 0,-1 -2,0 z m 3,6 0,1 1,0 0,-1 -1,0 z m 1,1 0,1 1,0 0,-1 -1,0 z m -1,0 -1,0 0,1 1,0 0,-1 z m -1,0 0,-1 -2,0 0,1 2,0 z m -2,0 -1,0 0,1 1,0 0,-1 z m -1,0 0,-1 -1,0 0,1 1,0 z m -1,0 -1,0 0,1 1,0 0,-1 z m 1,-4 1,0 0,1 -1,0 0,-1 z m 3,0 1,0 0,1 -1,0 0,-1 z" id="rect3061" style="fill: white; fill-opacity: 1;"></path>
+        </g>
+      </svg>
+      <span>Makielskis Bot</span>
+    </div>
+  </div>
+  <script src="js/jquery-1.8.3.js"></script>
+  <script src="js/jquery-ui-1.9.2.custom.min.js"></script>
+  <script src="js/bootstrap.min.js"></script>
+  <script src="js/jquerymx-3.2.custom.js"></script>
+  <script src="js/jquery.jqote2.min.js"></script>
+  <script src="js/jquery.scroll.js"></script>
+  <script src="js/underscore-min.js"></script>
+  <script src="js/bot_ui.js"></script>
+
+  <script type="text/x-jqote-template" id="tmpl_togglebtn">
+   <![CDATA[
+      <div class="row-fluid">
+        <div class="span4 column1">
+          <span class="span12"><%= this.label %></span>
+        </div>
+        <div class="span4 column2">
+        </div>
+        <div class="span4 column3">
+          <button type="button" class="span12 btn"></button>
+        </div>
+      </div>
+    ]]>
+  </script>
+
+  <script type="text/x-jqote-template" id="tmpl_textinput">
+   <![CDATA[
+      <div class="row-fluid">
+        <div class="span4 column1">
+          <span class="span12"><%= this.label %></span>
+        </div>
+        <div class="span4 column2">
+        </div>
+        <div class="span4 column3">
+          <input type="text" class="span12" value="<%= this.value %>"/>
+        </div>
+      </div>
+    ]]>
+  </script>
+
+  <script type="text/x-jqote-template" id="tmpl_checkbox">
+   <![CDATA[
+      <div class="row-fluid">
+        <div class="span4 column1">
+          <span class="span12"><%= this.label %></span>
+        </div>
+        <div class="span4 column1">
+        </div>
+        <div class="span4 column1">
+          <input type="checkbox" checked="<%= this.state %>"/>
+          <div class="placeholder"></div>
+        </div>
+      </div>
+    ]]>
+  </script>
+
+  <script type="text/x-jqote-template" id="tmpl_textinputlist">
+   <![CDATA[
+      <div class="row-fluid">
+        <div class="span4 column1">
+          <span class="span12"><%= this.label %></span>
+        </div>
+        <div class="span4 column2">
+          <div class="input-append span12">
+            <input class="span9" type="text"/>
+            <button class="span3 btn" type="button">Add</button>
+          </div>
+        </div>
+        <div class="span4 column3">
+          <ol type="text" class="span12 unstyled reorder-list"></ol>
+          <div class="placeholder"></div>
+        </div>
+      </div>
+    ]]>
+  </script>
+
+  <script type="text/x-jqote-template" id="tmpl_listinputlist">
+   <![CDATA[
+      <div class="row-fluid">
+        <div class="span4 column1">
+          <span class="span12"><%= this.label %></span>
+        </div>
+        <div class="span4 column2">
+          <ol class="span12 unstyled reorder-list"></ol>
+        </div>
+        <div class="span4 column3">
+          <ol class="span12 unstyled reorder-list"></ol>
+          <div class="placeholder"></div>
+        </div>
+      </div>
+    ]]>
+  </script>
+
+  <script type="text/x-jqote-template" id="tmpl_sliderinput">
+   <![CDATA[
+      <div class="row-fluid">
+        <div class="span4 column1">
+          <span class="span12"><%= this.label %></span>
+        </div>
+        <div class="span4 column2">
+          <div class="slider-input"></div>
+          <div class="placeholder"></div>
+        </div>
+        <div class="span4 column3">
+          <button class="btn span12" disabled="disabled" type="button">
+            <span class="slider-display"></span>
+            <div class="placeholder"></div>
+          </button>
+        </div>
+      </div>
+    ]]>
+  </script>
+
+  <script type="text/x-jqote-template" id="tmpl_log">
+   <![CDATA[
+      <div class="row-fluid">
+        <div class="span4 column1">
+          <span class="span12"><%= this.label %></span>
+        </div>
+        <div class="span8 column2">
+          <div class="log">
+          </div>
+        </div>
+      </div>
+    ]]>
+  </script>
+
+  <script type="text/x-jqote-template" id="tmpl_listitems">
+   <![CDATA[
+      <% for (var i in this.list) { %>
+        <li class="btn">
+          <% if (this.handles) { %>
+           <i class="handle icon-resize-vertical"></i>
+          <% } %>
+          <span class="text"><%= this.list[i] %></span>
+          <% if (this.handles) { %>
+            <i class="remove-handle icon-remove"></i>
+          <% } %>
+        </li>
+      <% } %>
+    ]]>
+  </script>
+
+  <script>
+    $(function() {
+      var server = function(arg) {
+        var update = _.bind(this.update, this);
+        _.delay(update, 250, arg);
+      };
+
+      var widgets = {
+        button: new ToggleButton("Flaschen verkaufen", server, ToggleButton.states.OFF),
+        input: new TextInput("Min. Verkaufspreis", server, "default Value"),
+        checkbox: new Checkbox("Min. Verkaufspreis", server),
+        textlist: new TextInputList("Gegner", server, ["Anti-Flag", "Rise Against", "Rage Against the Mashine"]),
+        listlist: new ListInputList("Playlist", server, ["Anti-Flag", "Rise Against", "Rage Against the Mashine"]),
+        slider: new SliderInput("WTF", server, 0.1, 2, 0.1, 1),
+        logger: new Log("Log")
+      };
+
+      new WidgetContainer(widgets, $("#app"));
+    });
+  </script>
+</body>
+</html>
