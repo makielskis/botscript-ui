@@ -191,7 +191,7 @@
   <script src="js/jquerymx-3.2.custom.js"></script>
   <script src="js/jquery.jqote2.min.js"></script>
   <script src="js/jquery.nicescroll.js"></script>
-  <script src="js/underscore-min.js"></script>
+  <script src="js/underscore.js"></script>
   <script src="js/bot_ui.js"></script>
 
   <script type="text/x-jqote-template" id="tmpl_togglebtn">
@@ -338,7 +338,7 @@
     $(function() {
       var server = function(arg) {
         var update = _.bind(this.update, this);
-        _.delay(update, 250, arg);
+        _.delay(update, 1000, arg);
       };
 
       var widgets = {

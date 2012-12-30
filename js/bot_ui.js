@@ -44,18 +44,36 @@ $(function() {
 
   $.Class('Widget',  {
     idPrefix: "widget",
-    idCounter: 0
+    idCounter: 0,
+
+    registeredWidgets: [],
+    registerWidget: function(widget) {
+      Widget.registeredWidgets.push(widget);
+    },
+    redrawAll: function() {
+      _.each(Widget.registeredWidgets, function(widget) {
+        widget.redraw();
+      });
+    }
   },
   {
-    init: function(label, callback) {
+    init: function(label, cb) {
       this.label = label;
-      this.onChange = this.callback(callback);
+      this.onChange = _.bind(function(cb_arg, data) {
+        _.bind(cb_arg, this, data)();
+        Widget.redrawAll();
+      }, this, cb);
       this.element;
       this.id = Widget.idPrefix + Widget.idCounter++;
+
+      Widget.registerWidget(this);
     },
 
     update: function(newState) {
-      console.log("default update function: " + this);
+      Widget.redrawAll();
+    },
+
+    redraw: function() {
     }
   });
 
@@ -269,6 +287,9 @@ $(function() {
 
       // re-enable inputs
       this.disableInputs(false);
+
+      // call parent 
+      this._super();
     }
   });
 
@@ -447,7 +468,7 @@ $(function() {
       });
     },
 
-    repaintScroll: function() {
+    redraw: function() {
       this.logArea.getNiceScroll().resize();
     }
   });
