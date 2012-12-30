@@ -184,7 +184,9 @@ $(function() {
       // sortable initialisation
       this.list.sortable({
         axis: "y",
-        cursor: "move"
+        cursor: "move",
+        placeholder: "drop-indicator",
+        forcePlaceholderSize: true,
       });
       this.list.disableSelection();
 
@@ -293,6 +295,8 @@ $(function() {
         axis: "y",
         cursor: "move",
         cancel: "li.drop-indicator",
+        placeholder: "drop-indicator",
+        forcePlaceholderSize: true,
       });
       this.dstList.disableSelection();
 
@@ -435,7 +439,16 @@ $(function() {
       this.element = $($("#tmpl_log").jqote({label: this.label}));
       this.logArea = this.element.find(".log");
 
-      this.logArea.mCustomScrollbar({scrollEasing: 'linear'});
+      this.logArea.niceScroll({
+        cursorborder: "none",
+        cursorborderradius: "0",
+        autohidemode: false,
+        railoffset: {left: 5},
+      });
+    },
+
+    repaintScroll: function() {
+      this.logArea.getNiceScroll().resize();
     }
   });
 });
