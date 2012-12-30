@@ -7,7 +7,7 @@
   <link href="css/font-awesome.css" rel="stylesheet">
   <link href="css/smoothness/jquery-ui-1.9.2.custom.css" rel="stylesheet">
   <link href="css/fonts.css" rel="stylesheet">
-  <link href="css/scrollbar.css" rel="stylesheet">
+  <link href="css/jquery.mCustomScrollbar.css" rel="stylesheet">
   <style type="text/css">
     body {
       margin-top: 5%;
@@ -168,9 +168,10 @@
       color: #ddd;
       background-color: #000;
       min-height: 10em;
-      max-height: 20em;
+      max-height: 10em;
       padding: 10px;
-      overflow: auto;
+      overflow: hidden;
+      width: 100%;
     }
   </style>
 </head>
@@ -190,7 +191,8 @@
   <script src="js/bootstrap.min.js"></script>
   <script src="js/jquerymx-3.2.custom.js"></script>
   <script src="js/jquery.jqote2.min.js"></script>
-  <script src="js/jquery.scroll.js"></script>
+  <script src="js/jquery.mousewheel.min.js"></script>
+  <script src="js/jquery.mCustomScrollbar.js"></script>
   <script src="js/underscore-min.js"></script>
   <script src="js/bot_ui.js"></script>
 
@@ -304,7 +306,14 @@
           <span class="span12"><%= this.label %></span>
         </div>
         <div class="span8 column2">
-          <div class="log">
+          <div class="log scrollpane">
+            <div>Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas.</div>
+            <div>Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas.</div>
+            <div>Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas.</div>
+            <div>Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas.</div>
+            <div>Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas.</div>
+            <div>Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas.</div> 
+            <div>Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas.</div>
           </div>
         </div>
       </div>

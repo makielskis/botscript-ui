@@ -433,6 +433,9 @@ $(function() {
       this._super(label, function() {});
 
       this.element = $($("#tmpl_log").jqote({label: this.label}));
+      this.logArea = this.element.find(".log");
+
+      this.logArea.mCustomScrollbar({scrollEasing: 'linear'});
     }
   });
 });
