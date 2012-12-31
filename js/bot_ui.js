@@ -38,6 +38,7 @@ $(function() {
     render: function() {
       _.each(this.widgets, function(widget, index) {
         this.element.append(widget.element);
+        widget.rendered();
       }, this);
     }
   });
@@ -74,6 +75,9 @@ $(function() {
     },
 
     redraw: function() {
+    },
+
+    rendered: function() {
     }
   });
 
@@ -125,6 +129,9 @@ $(function() {
 
     update: function(newState) {
       this.changeState(newState);
+
+      // call parent (log scroll update)
+      this._super()
     }
   });
 
@@ -149,6 +156,9 @@ $(function() {
     update: function(newValue) {
       this.input.attr("value", newValue);
       this.input.effect('highlight');
+
+      // call parent (log scroll update)
+      this._super()
     }
   });
 
@@ -177,6 +187,9 @@ $(function() {
       this.input.attr('checked', newState ? true : false);
       this.input.removeAttr("disabled").show();
       this.placeholder.hide();
+
+      // call parent (log scroll update)
+      this._super();
     }
   });
 
@@ -288,7 +301,7 @@ $(function() {
       // re-enable inputs
       this.disableInputs(false);
 
-      // call parent 
+      // call parent (log scroll update)
       this._super();
     }
   });
@@ -394,6 +407,9 @@ $(function() {
 
         // re-enable inputs
         this.disableInput(false);
+
+        // call parent (log scroll update)
+        this._super();
       }
     }
   });
@@ -450,26 +466,120 @@ $(function() {
         this.sliderDisplay.html(newValue);
       }
       this.disableInput(false);
+
+      // call parent (log scroll update)
+      this._super();
     }
   });
 
   Widget("Log", {
-    init: function(label) {
+    matchError: /^\[ERROR]/,
+    matchInfo: /^\[INFO ]/,
+    matchDebug: /^\[DEBUG]/,
+  }, {
+    init: function(label, initMessages) {
       this._super(label, function() {});
 
       this.element = $($("#tmpl_log").jqote({label: this.label}));
       this.logArea = this.element.find(".log");
+      this.header = this.element.find(".collapsible-header");
+      this.slider = this.header.find(".slider-input");
+
+      this.visible = true;
+
+      this.header.click(_.bind(this.toggleVisible, this));
 
       this.logArea.niceScroll({
-        cursorborder: "none",
+        cursorborder: "1px solid #555",
         cursorborderradius: "0",
-        autohidemode: false,
-        railoffset: {left: 5},
+        cursorcolor: 'white',
+        autohidemode: false
       });
+
+      this.slider.slider({
+        min: 0,
+        max: 2,
+      });
+      this.slider.slider("value", 1);
+      this.slider.on("slidestop", _.bind(this.filterMessages, this, true));
+
+      if (_.isArray(initMessages)) {
+        _.each(initMessages, this.addMessage, this);
+      }
+    },
+
+    toggleVisible: function() {
+      var logContainer = this.logArea.parents(".row-fluid");
+      if (logContainer.is(':animated')) {
+        return;
+      }
+
+      if (this.visible === true) {
+        this.logArea.getNiceScroll().hide();
+        logContainer.slideUp(500, _.bind(function() {
+          this.header.find("i").addClass("rotate").removeClass("derotate");
+          this.visible = false;
+        }, this));
+      } else if (this.visible === false) {
+        logContainer.slideDown(500, _.bind(function() {
+          this.header.find("i").addClass("derotate").removeClass("rotate");
+          this.logArea.getNiceScroll().show();
+          this.visible = true;
+        }, this));
+      }
+    },
+
+    filterMessages: function(animated) {
+      var redrawFunc = _.bind(function() {
+        this.redraw();
+      }, this);
+
+      switch (this.slider.slider("value")) {
+        case 0:
+          this.slider.removeClass("info").removeClass("debug").addClass("error");
+          this.logArea.children(".info, .debug").hide(animated ? "slideUp" : undefined);
+          this.logArea.children(".error").show(animated ? "slideDown" : undefined, redrawFunc);
+          break;
+        case 1:
+          this.slider.removeClass("error").removeClass("debug").addClass("info");
+          this.logArea.children(".debug").hide(animated ? "slideUp" : undefined);
+          this.logArea.children(".error, .info").show(animated ? "slideDown" : undefined, redrawFunc);
+          break;
+        case 2:
+          this.slider.removeClass("info").removeClass("error").addClass("debug");
+          this.logArea.children(".error, .info, .debug").show(animated ? "slideDown" : undefined, redrawFunc);
+      }
+    },
+
+    addMessage: function(msg) {
+      var msgContainer = $("<div></div>").html(msg);
+
+      if (Log.matchInfo.exec(msg)) {
+        msgContainer.addClass("info");
+      } else if (Log.matchError.exec(msg)) {
+        msgContainer.addClass("error");
+      } else if (Log.matchDebug.exec(msg)) {
+        msgContainer.addClass("debug");
+      }
+
+      this.logArea.append(msgContainer);
+      this.filterMessages(false);
+      this.logArea.scrollTop(this.logArea[0].scrollHeight);
+    },
+
+    update: function(incomeing) {
+      this.addMessage(incomeing);
+      this._super();
     },
 
     redraw: function() {
       this.logArea.getNiceScroll().resize();
+      this.rendered();
+    },
+
+    rendered: function() {
+      this.logArea.scrollTop(this.logArea[0].scrollHeight);
+      this.filterMessages(false);
     }
   });
 });

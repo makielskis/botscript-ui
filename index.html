@@ -7,7 +7,6 @@
   <link href="css/font-awesome.css" rel="stylesheet">
   <link href="css/smoothness/jquery-ui-1.9.2.custom.css" rel="stylesheet">
   <link href="css/fonts.css" rel="stylesheet">
-  <link href="css/jquery.mCustomScrollbar.css" rel="stylesheet">
   <style type="text/css">
     body {
       margin-top: 5%;
@@ -165,12 +164,74 @@
 
     .log {
       font-family: monospace;
+      font-size: 10pt;
       color: #ddd;
       background-color: #000;
-      height: 10em;
+      height: 15em;
       padding: 10px;
       overflow: hidden;
-      margin-right: 5px;
+    }
+
+    .log .error {
+      color: rgb(255, 82, 82);
+    }
+
+    .log .info {
+      color: rgb(82, 255, 103);
+    }
+
+    .log.debug {
+      color: white;
+    }
+
+    .collapsible-header i {
+      display: inline-block;
+      padding: 3px 10px;
+    }
+
+    .collapsible-header .slider-input {
+      margin: 8px 0;
+      margin-right: 20px;
+    }
+
+    .collapsible-header .slider-input.error {
+      background: #ef2929;
+    }
+
+    .collapsible-header .slider-input.info {
+      background: #8ae234;
+    }
+
+    .collapsible-header .slider-input.debug {
+      background: #eee;
+    }
+
+    .rotate {
+    transition: transform 0.25s;
+    -webkit-transition: -webkit-transform 0.25s;
+    -moz-transition: -moz-transform 0.25s;
+    -ms-transition: -ms-transform 0.25s;
+    -o-transition: -o-transform 0.25s;
+
+     transform: rotate(-90deg);
+    -webkit-transform: rotate(-90deg);
+    -moz-transform: rotate(-90deg);
+    -ms-transform: rotate(-90deg);
+    -o-transform: rotate(-90deg);
+    }
+
+    .derotate {
+    transition: transform 0.25s;
+    -webkit-transition: -webkit-transform 0.25s;
+    -moz-transition: -moz-transform 0.25s;
+    -ms-transition: -ms-transform 0.25s;
+    -o-transition: -o-transform 0.25s;
+
+     transform: rotate(0deg);
+    -webkit-transform: rotate(0deg);
+    -moz-transform: rotate(0deg);
+    -ms-transform: rotate(0deg);
+    -o-transform: rotate(0deg);
     }
   </style>
 </head>
@@ -299,19 +360,19 @@
 
   <script type="text/x-jqote-template" id="tmpl_log">
    <![CDATA[
-      <div class="row-fluid">
-        <div class="span4 column1">
-          <span class="span12"><%= this.label %></span>
+      <div class="row-fluid btn">
+        <div class="collapsible-header span12">
+          <span class="span6"><i class="handle icon-chevron-down"></i>
+            <span> <%= this.label %></span>
+          </span>
+          <div class="offset4 span2">
+            <div class="slider-input"></div>
+          </div>
         </div>
-        <div class="span8 column2">
+      </div>
+      <div class="row-fluid">
+        <div class="span12">
           <div class="log scrollpane">
-            <div>Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas.</div>
-            <div>Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas.</div>
-            <div>Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas.</div>
-            <div>Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas.</div>
-            <div>Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas.</div>
-            <div>Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas.</div> 
-            <div>Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas.</div>
           </div>
         </div>
       </div>
@@ -323,7 +384,7 @@
       <% for (var i in this.list) { %>
         <li class="btn">
           <% if (this.handles) { %>
-           <i class="handle icon-resize-vertical"></i>
+           <i class="handle icon-sort"></i>
           <% } %>
           <span class="text"><%= this.list[i] %></span>
           <% if (this.handles) { %>
@@ -338,8 +399,33 @@
     $(function() {
       var server = function(arg) {
         var update = _.bind(this.update, this);
-        _.delay(update, 1000, arg);
+        _.delay(update, 250, arg);
+        widgets.logger.update(initMessages[_.random(0, initMessages.length)]);
       };
+
+      var initMessages = [
+        "[INFO ][30.12 13:16:37][pg_sy_oclife ] starting",
+        "[INFO ][30.12 13:16:37][pg_sy_oclife ] restarting from begin",
+        "[DEBUG][30.12 13:16:37][pg_sy_oclife ] setting training_index to 1",
+        "[DEBUG][30.12 13:16:37][pg_sy_oclife ] getting pennerbar",
+        "[INFO ][30.12 13:16:37][pg_sy_oclife ] wait for running training to finish",
+        "[INFO ][30.12 13:16:37][pg_sy_oclife ] sleeping 11506s",
+        "[INFO ][30.12 16:28:36][pg_sy_oclife ] starting",
+        "[ERROR][30.12 22:08:51][kv_sf_oclife ] territory id not found - retrying",
+        "[ERROR][30.12 22:08:51][kv_sf_oclife ] sleeping 113s",
+        "[DEBUG][30.12 16:28:36][pg_sy_oclife ] getting pennerbar",
+        "[DEBUG][30.12 16:28:36][pg_sy_oclife ] next training: agi",
+        "[DEBUG][30.12 16:28:36][pg_sy_oclife ] getting study page",
+        "[DEBUG][30.12 16:28:36][pg_sy_oclife ] reading mystery id",
+        "[INFO ][30.12 16:28:37][pg_sy_oclife ] buying 9 breads",
+        "[INFO ][30.12 16:28:37][pg_sy_oclife ] buying 8 beers",
+        "[INFO ][30.12 16:28:38][pg_sy_oclife ] drinking 8 beers",
+        "[INFO ][30.12 16:28:39][pg_sy_oclife ] starting training: agi",
+        "[INFO ][30.12 16:28:40][pg_sy_oclife ] eating 9 breads",
+        "[DEBUG][30.12 16:28:41][pg_sy_oclife ] setting training_index to 2",
+        "[DEBUG][30.12 16:28:41][pg_sy_oclife ] getting pennerbar",
+        "[INFO ][30.12 16:28:41][pg_sy_oclife ] sleeping 84965s"
+      ];
 
       var widgets = {
         button: new ToggleButton("Flaschen verkaufen", server, ToggleButton.states.OFF),
@@ -348,7 +434,7 @@
         textlist: new TextInputList("Gegner", server, ["Anti-Flag", "Rise Against", "Rage Against the Mashine"]),
         listlist: new ListInputList("Playlist", server, ["Anti-Flag", "Rise Against", "Rage Against the Mashine"]),
         slider: new SliderInput("WTF", server, 0.1, 2, 0.1, 1),
-        logger: new Log("Log")
+        logger: new Log("Log", initMessages)
       };
 
       new WidgetContainer(widgets, $("#app"));
