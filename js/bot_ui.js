@@ -501,7 +501,7 @@ $(function() {
         max: 2,
       });
       this.slider.slider("value", 1);
-      this.slider.on("slidestop", _.bind(this.filterMessages, this, true));
+      this.slider.on("slidestop", _.bind(this.filterMessages, this));
 
       if (_.isArray(initMessages)) {
         _.each(initMessages, this.addMessage, this);
@@ -529,7 +529,7 @@ $(function() {
       }
     },
 
-    filterMessages: function(animated) {
+    filterMessages: function() {
       var redrawFunc = _.bind(function() {
         this.redraw();
       }, this);
@@ -537,17 +537,17 @@ $(function() {
       switch (this.slider.slider("value")) {
         case 0:
           this.slider.removeClass("info").removeClass("debug").addClass("error");
-          this.logArea.children(".info, .debug").hide(animated ? "slideUp" : undefined);
-          this.logArea.children(".error").show(animated ? "slideDown" : undefined, redrawFunc);
+          this.logArea.children(".info, .debug").hide();
+          this.logArea.children(".error").show();
           break;
         case 1:
           this.slider.removeClass("error").removeClass("debug").addClass("info");
-          this.logArea.children(".debug").hide(animated ? "slideUp" : undefined);
-          this.logArea.children(".error, .info").show(animated ? "slideDown" : undefined, redrawFunc);
+          this.logArea.children(".debug").hide();
+          this.logArea.children(".error, .info").show();
           break;
         case 2:
           this.slider.removeClass("info").removeClass("error").addClass("debug");
-          this.logArea.children(".error, .info, .debug").show(animated ? "slideDown" : undefined, redrawFunc);
+          this.logArea.children(".error, .info, .debug").show();
       }
     },
 
@@ -563,7 +563,7 @@ $(function() {
       }
 
       this.logArea.append(msgContainer);
-      this.filterMessages(false);
+      this.filterMessages();
       this.logArea.scrollTop(this.logArea[0].scrollHeight);
     },
 
@@ -579,7 +579,7 @@ $(function() {
 
     rendered: function() {
       this.logArea.scrollTop(this.logArea[0].scrollHeight);
-      this.filterMessages(false);
+      this.filterMessages();
     }
   });
 });
