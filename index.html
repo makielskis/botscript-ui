@@ -9,8 +9,13 @@
   <link href="css/fonts.css" rel="stylesheet">
   <style type="text/css">
     body {
+      font-family: "Source Sans Pro";
       margin-top: 5%;
       background-color: #eee;
+    }
+
+    * {
+      outline: none;
     }
 
     input, button {
@@ -245,6 +250,10 @@
     -ms-transform-origin: 50% 50%;
     -o-transform-origin: 50% 50%;
     }
+
+    .auto-height {
+      height: auto !important;
+    }
   </style>
 </head>
 <body>
@@ -372,23 +381,29 @@
 
   <script type="text/x-jqote-template" id="tmpl_log">
    <![CDATA[
-      <div class="row-fluid btn">
-        <div class="collapsible-header span12">
-          <span class="span6"><i class="handle icon-chevron-down"></i>
-            <span> <%= this.label %></span>
-          </span>
-          <div class="offset4 span2">
-            <div class="slider-input"></div>
+      <div>
+        <div class="row-fluid btn">
+          <div class="collapsible-header span12">
+            <span class="span6"><i class="handle icon-chevron-down"></i>
+              <span> <%= this.label %></span>
+            </span>
+            <div class="offset4 span2">
+              <div class="slider-input"></div>
+            </div>
           </div>
         </div>
-      </div>
-      <div class="row-fluid">
-        <div class="span12">
-          <div class="log scrollpane">
+        <div class="row-fluid">
+          <div class="span12">
+            <div class="log scrollpane">
+            </div>
           </div>
         </div>
       </div>
     ]]>
+  </script>
+
+  <script type="text/x-jqote-template" id="tmpl_accordion">
+    
   </script>
 
   <script type="text/x-jqote-template" id="tmpl_listitems">
@@ -412,7 +427,7 @@
       var server = function(arg) {
         var update = _.bind(this.update, this);
         _.delay(update, 250, arg);
-        widgets.logger.update(initMessages[_.random(0, initMessages.length)]);
+  //      widgets.logger.update(initMessages[_.random(0, initMessages.length)]);
       };
 
       var initMessages = [
@@ -439,17 +454,28 @@
         "[INFO ][30.12 16:28:41][pg_sy_oclife ] sleeping 84965s"
       ];
 
-      var widgets = {
-        button: new ToggleButton("Flaschen verkaufen", server, ToggleButton.states.OFF),
-        input: new TextInput("Min. Verkaufspreis", server, "default Value"),
-        checkbox: new Checkbox("Min. Verkaufspreis", server),
-        textlist: new TextInputList("Gegner", server, ["Anti-Flag", "Rise Against", "Rage Against the Mashine"]),
-        listlist: new ListInputList("Playlist", server, ["Anti-Flag", "Rise Against", "Rage Against the Mashine"]),
-        slider: new SliderInput("WTF", server, 0.1, 2, 0.1, 1),
-        logger: new Log("Log", initMessages)
-      };
+      function makeContainer() {
+        var widgets = {
+          button: new ToggleButton("Flaschen verkaufen", server, ToggleButton.states.OFF),
+          input: new TextInput("Min. Verkaufspreis", server, "default Value"),
+          checkbox: new Checkbox("Min. Verkaufspreis", server),
+          textlist: new TextInputList("Gegner", server, ["Anti-Flag", "Rise Against", "Rage Against the Mashine"]),
+          listlist: new ListInputList("Playlist", server, ["Anti-Flag", "Rise Against", "Rage Against the Mashine"]),
+          slider: new SliderInput("WTF", server, 0.1, 2, 0.1, 1),
+          logger: new Log("Log", initMessages)
+        };
+        return new WidgetContainer(widgets);
+      }
 
-      new WidgetContainer(widgets, $("#app"));
+      var containers = {
+        "Container #1": makeContainer(),
+        "Container #2": makeContainer(),
+        "Container #3": makeContainer(),
+        "Container #4": makeContainer(),
+        "Container #5": makeContainer(),
+      }
+
+      var accordion = new Accordion(containers, $("<div>").appendTo($("#app")));
     });
   </script>
 </body>

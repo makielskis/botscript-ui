@@ -2,12 +2,69 @@ $(function() {
 
   "use strict";
 
+  $.Class('Accordion', {
+    idPrefix: "accordion",
+    idCounter: 0,
+  }, {
+    containers: {},
+
+    init: function(containers, element) {
+      this.containers = containers;
+      this.element = $(element).addClass("accordion");
+      this.render();
+    },
+
+    render: function() {
+      _.each(this.containers, function(container, name) {
+        container.element.addClass("accordion-item");
+        this.element.append($("<h4>" + name + "</h4>"));
+        this.element.append(container.element);
+      }, this);
+      this.element.accordion();
+      this.element.on("accordionbeforeactivate", _.bind(function(event, ui) {
+        ui.oldPanel.removeClass("auto-height");
+        ui.newPanel.removeClass("auto-height");
+
+        _.each(this.containers, function(container) {
+          _.each(container.widgets, function(widget) {
+            if (widget instanceof Log) {
+              widget.hideScrollbar();
+            }
+          });
+        });
+      }, this));
+
+      this.element.on("accordionactivate", _.bind(function(event, ui) {
+        ui.oldPanel.addClass("auto-height");
+        ui.newPanel.addClass("auto-height");
+
+        _.each(this.containers, function(container) {
+          _.each(container.widgets, function(widget) {
+            if (widget instanceof Log) {
+              widget.showScrollbar();
+              widget.redraw();
+            }
+          });
+        });
+
+        this.element.accordion( "option", "heightStyle", "content" );
+      }, this));
+    }
+  }),
+
   $.Class('WidgetContainer', {
     widgets: {},
 
-    init: function(widgets, element) {
+    init: function(widgets, parent) {
       this.widgets = widgets;
-      this.element = $(element).addClass("widgetcontainer");
+
+      if (_.isUndefined(parent)) {
+        this.element = $("<div></div>");
+      } else {
+        this.element = $(parent);
+      }
+      this.element.addClass("widgetcontainer");
+
       this.render();
     },
 
@@ -78,7 +135,7 @@ $(function() {
     },
 
     rendered: function() {
-    }
+    },
   });
 
   Widget("ToggleButton", {
@@ -442,6 +499,8 @@ $(function() {
 
       this.slider.on("slidestop", this.callback(this.onSlideChange));
       this.slider.on("slide", this.callback(this.onSlide));
+
+      this.element.attr("id", this.id);
     },
 
     disableInput: function(disable) {
@@ -485,6 +544,8 @@ $(function() {
       this.header = this.element.find(".collapsible-header");
       this.slider = this.header.find(".slider-input");
 
+      this.element.attr("id", this.id);
+
       this.visible = true;
 
       this.header.click(_.bind(this.toggleVisible, this));
@@ -524,8 +585,15 @@ $(function() {
         logContainer.slideDown(500, _.bind(function() {
           this.header.find("i").addClass("derotate").removeClass("rotate");
           this.logArea.getNiceScroll().show();
+          this.logArea.getNiceScroll().resize();
           this.visible = true;
         }, this));
+      }
+    },
+
+    hide: function() {
+      if (this.visible) {
+        this.toggleVisible();
       }
     },
 
@@ -580,6 +648,14 @@ $(function() {
     rendered: function() {
       this.logArea.scrollTop(this.logArea[0].scrollHeight);
       this.filterMessages();
-    }
+    },
+
+    hideScrollbar: function() {
+      this.logArea.getNiceScroll().hide();
+    },
+
+    showScrollbar: function() {
+      this.logArea.getNiceScroll().show();
+    },
   });
 });
