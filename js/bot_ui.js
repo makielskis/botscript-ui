@@ -17,10 +17,10 @@ $(function() {
     render: function() {
       _.each(this.containers, function(container, name) {
         container.element.addClass("accordion-item");
-        this.element.append($("<h4>" + name + "</h4>"));
+        this.element.append($("<h4><i class=\"icon-chevron-down\"></i>" + name + "</h4>"));
         this.element.append(container.element);
       }, this);
-      this.element.accordion();
+      this.element.accordion({ collapsible: true });
       this.element.on("accordionbeforeactivate", _.bind(function(event, ui) {
         ui.oldPanel.removeClass("auto-height");
         ui.newPanel.removeClass("auto-height");
@@ -38,6 +38,9 @@ $(function() {
         ui.oldPanel.addClass("auto-height");
         ui.newPanel.addClass("auto-height");
 
+        ui.oldHeader.find("i").removeClass("rotate").addClass("derotate");
+        ui.newHeader.find("i").removeClass("derotate").addClass("rotate");
+
         _.each(this.containers, function(container) {
           _.each(container.widgets, function(widget) {
             if (widget instanceof Log) {
@@ -51,6 +54,92 @@ $(function() {
       }, this));
     }
   }),
+
+  $.Class('VTabs', {
+    idCounter: 0,
+  }, {
+    containerMap: {},
+
+    paneCounter: 0,
+
+    init: function(containerMap, parent) {
+      this.id = VTabs.idCounter++;
+
+      this.containerMap = containerMap;
+      this.parent = $(parent).addClass('vtab-container');
+
+      this.render();
+    },
+
+    makeId: function() {
+      return "tabpane-" + VTabs.idCounter + "-" + this.paneCounter++;
+    },
+
+    render: function() {
+/*
+      var ul = $("<ul></ul>");
+      var contentElements = [];
+
+      _.each(this.containerMap, function(container, name) {
+        var id = this.makeId();
+
+        // setup link list
+        var link = $("<a>" + name + "</a>").attr("href", "#" + id);
+        var listItem = $("<li></li>").append(link);
+        listItem.appendTo(ul);
+
+        // setup content elements
+        container.element.attr("id", id);
+        contentElements.push(container.element);
+      }, this);
+
+      ul.appendTo(this.parent);
+
+      _.each(contentElements, function(element) {
+        element.appendTo(this.parent);
+      }, this);
+*/
+
+      var tabs = $($("#tmpl_tabs").jqote({
+        containerMap: this.containerMap,
+        id: this.id,
+        context: this,
+      }));
+
+      _.each(tabs.find(".replaceme"), function(replaceme) {
+        replaceme = $(replaceme);
+        replaceme.replaceWith(this.containerMap[replaceme.attr("data-name")].element);
+      }, this);
+
+      tabs.appendTo(this.parent);
+
+      this.parent.tabs({
+        beforeActivate: _.bind(function( event, ui ) {
+          _.each(this.containerMap, function(container) {
+            _.each(container.widgets, function(widget) {
+              if (widget instanceof Log) {
+                widget.hideScrollbar();
+              }
+            });
+          });
+        }, this),
+
+        activate: _.bind(function( event, ui ) {
+          _.each(this.containerMap, function(container) {
+            _.each(container.widgets, function(widget) {
+              if (widget instanceof Log) {
+                widget.showScrollbar();
+                widget.redraw();
+              }
+            });
+          });
+        }, this)
+      });
+
+      this.parent.addClass( "ui-tabs-vertical ui-helper-clearfix" );
+      this.parent.children("li").removeClass( "ui-corner-top" ).addClass( "ui-corner-left" );
+    },
+  });
 
   $.Class('WidgetContainer', {
     widgets: {},
@@ -570,7 +659,7 @@ $(function() {
     },
 
     toggleVisible: function() {
-      var logContainer = this.logArea.parents(".row-fluid");
+      var logContainer = this.logArea.parent().parent();
       if (logContainer.is(':animated')) {
         return;
       }

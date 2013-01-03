@@ -14,8 +14,12 @@
       background-color: #eee;
     }
 
-    * {
-      outline: none;
+    *:focus {
+        outline: none;
+    }
+
+    a:focus {
+        outline: none;
     }
 
     input, button {
@@ -93,6 +97,25 @@
 
     .reorder-list li:first-child {
       margin-top: 0;
+    }
+
+    .reorder-list li .text {
+      overflow: hidden;
+      overflow: -moz-hidden-unscrollable;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      display: inline-block;
+    }
+
+    .reorder-list.ui-sortable li .text {
+      max-width: calc(100% - 48px);
+      max-width: -webkit-calc(100% - 48px);
+      max-width: -moz-calc(100% - 48px);
+      max-width: -o-calc(100% - 48px);
+    }
+
+    .reorder-list .ui-draggable .text {
+      max-width: 
     }
 
     .remove-handle {
@@ -191,7 +214,7 @@
 
     .collapsible-header i {
       display: inline-block;
-      padding: 3px 10px;
+      padding: 7px 10px;
     }
 
     .collapsible-header .slider-input {
@@ -212,47 +235,77 @@
     }
 
     .rotate {
-    transition: transform 0.25s;
-    -webkit-transition: -webkit-transform 0.25s;
-    -moz-transition: -moz-transform 0.25s;
-    -ms-transition: -ms-transform 0.25s;
-    -o-transition: -o-transform 0.25s;
+      transition: transform 0.25s;
+      -webkit-transition: -webkit-transform 0.25s;
+      -moz-transition: -moz-transform 0.25s;
+      -ms-transition: -ms-transform 0.25s;
+      -o-transition: -o-transform 0.25s;
 
-     transform: rotate(-90deg);
-    -webkit-transform: rotate(-90deg);
-    -moz-transform: rotate(-90deg);
-    -ms-transform: rotate(-90deg);
-    -o-transform: rotate(-90deg);
+       transform: rotate(-90deg);
+      -webkit-transform: rotate(-90deg);
+      -moz-transform: rotate(-90deg);
+      -ms-transform: rotate(-90deg);
+      -o-transform: rotate(-90deg);
 
-     transform-origin: 50% 50%;
-    -webkit-transform-origin: 50% 50%;
-    -moz-transform-origin: 50% 50%;
-    -ms-transform-origin: 50% 50%;
-    -o-transform-origin: 50% 50%;
+       transform-origin: 50% 50%;
+      -webkit-transform-origin: 50% 50%;
+      -moz-transform-origin: 50% 50%;
+      -ms-transform-origin: 50% 50%;
+      -o-transform-origin: 50% 50%;
     }
 
     .derotate {
-    transition: transform 0.25s;
-    -webkit-transition: -webkit-transform 0.25s;
-    -moz-transition: -moz-transform 0.25s;
-    -ms-transition: -ms-transform 0.25s;
-    -o-transition: -o-transform 0.25s;
+      transition: transform 0.25s;
+      -webkit-transition: -webkit-transform 0.25s;
+      -moz-transition: -moz-transform 0.25s;
+      -ms-transition: -ms-transform 0.25s;
+      -o-transition: -o-transform 0.25s;
 
-     transform: rotate(0deg);
-    -webkit-transform: rotate(0deg);
-    -moz-transform: rotate(0deg);
-    -ms-transform: rotate(0deg);
-    -o-transform: rotate(0deg);
+       transform: rotate(0deg);
+      -webkit-transform: rotate(0deg);
+      -moz-transform: rotate(0deg);
+      -ms-transform: rotate(0deg);
+      -o-transform: rotate(0deg);
 
-     transform-origin: 50% 50%;
-    -webkit-transform-origin: 50% 50%;
-    -moz-transform-origin: 50% 50%;
-    -ms-transform-origin: 50% 50%;
-    -o-transform-origin: 50% 50%;
+       transform-origin: 50% 50%;
+      -webkit-transform-origin: 50% 50%;
+      -moz-transform-origin: 50% 50%;
+      -ms-transform-origin: 50% 50%;
+      -o-transform-origin: 50% 50%;
     }
 
     .auto-height {
       height: auto !important;
+    }
+
+    .ui-accordion-header {
+      padding: 4px;
+      border: 1px solid #333;
+    }
+
+    .ui-accordion-header i {
+      display: inline-block;
+      margin: 0 10px;
+    }
+
+    .ui-accordion-content {
+      padding: 0 10px;
+    }
+
+    .ui-slider {
+      background: #F3F3F3;
+      background: linear-gradient(top,#F5F5F5,#F1F1F1);
+      background: -webkit-linear-gradient(top,#F5F5F5,#F1F1F1);
+      background: -moz-linear-gradient(top,#F5F5F5,#F1F1F1);
+      background: -o-linear-gradient(top,#F5F5F5,#F1F1F1);
+      background: -ms-linear-gradient(top,#F5F5F5,#F1F1F1);
+      border: 1px solid #ddd;
+    }
+
+    .ui-slider-handle {
+      border: 1px solid #444;
+      background: #555;
+      border-radius: 9px;
     }
   </style>
 </head>
@@ -271,7 +324,7 @@
   <script src="js/jquery-ui-1.9.2.custom.min.js"></script>
   <script src="js/bootstrap.min.js"></script>
   <script src="js/jquerymx-3.2.custom.js"></script>
-  <script src="js/jquery.jqote2.min.js"></script>
+  <script src="js/jquery.jqote2.js"></script>
   <script src="js/jquery.nicescroll.js"></script>
   <script src="js/underscore.js"></script>
   <script src="js/bot_ui.js"></script>
@@ -402,10 +455,6 @@
     ]]>
   </script>
 
-  <script type="text/x-jqote-template" id="tmpl_accordion">
-    
-  </script>
-
   <script type="text/x-jqote-template" id="tmpl_listitems">
    <![CDATA[
       <% for (var i in this.list) { %>
@@ -419,6 +468,30 @@
           <% } %>
         </li>
       <% } %>
+    ]]>
+  </script>
+
+  <script type="text/x-jqote-template" id="tmpl_tabs">
+   <![CDATA[
+      <div class="row-fluid">
+        <div class="span3">
+          <ul class="unstyled">
+            <% var counter = 0; %>
+            <% for (var name in this.containerMap) { %>
+              <li><a href="#tabpane-<%= this.id %>-<%= counter %>"><%= name %></a></li>
+              <% counter++; %>
+            <% } %>
+          </ul>
+        </div>
+
+        <% var counter = 0; %>
+        <% for (var name in this.containerMap) { %>
+          <div class="span9 tabpane" id="tabpane-<%= this.id %>-<%= counter %>">
+            <div class="replaceme" data-name="<%= name %>"></div>
+            <% counter++; %>
+          </div>
+        <% } %>
+      </div>
     ]]>
   </script>
 
@@ -467,15 +540,14 @@
         return new WidgetContainer(widgets);
       }
 
-      var containers = {
-        "Container #1": makeContainer(),
-        "Container #2": makeContainer(),
-        "Container #3": makeContainer(),
-        "Container #4": makeContainer(),
-        "Container #5": makeContainer(),
-      }
+      var containerMap = {
+        "Flaschen Sammeln": makeContainer(),
+        "Flaschen Varkaufen": makeContainer(),
+        "Missionen": makeContainer(),
+        "Kämpfen": makeContainer(),
+      };
 
-      var accordion = new Accordion(containers, $("<div>").appendTo($("#app")));
+      var vatbs = new VTabs(containerMap, $("#app"));
     });
   </script>
 </body>
