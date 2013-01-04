@@ -33,26 +33,16 @@
     }
 
     #app-title {
-      background-color: #222;
+      background-color: #333;
       color: white;
-      width: 100%;
-      margin-top: -20px;
-      margin-left: -20px;
-      margin-bottom: 20px;
-      padding: 5px 20px;
       box-shadow: rgba(0, 0, 0, 0.2) 0px 2px 6px 0px;
-    }
-
-    #app-title span {
-      font-size: 14pt;
-      font-weight: bold;
-      vertical-align: middle;
+      font-size: 16px;
+      letter-spacing: 1px;
     }
 
     #invader {
       height: 24px;
       width: 24px;
-      margin-right: 10px;
       vertical-align: middle;
     }
 
@@ -114,10 +104,6 @@
       max-width: -o-calc(100% - 48px);
     }
 
-    .reorder-list .ui-draggable .text {
-      max-width: 
-    }
-
     .remove-handle {
       float: right;
       cursor: pointer;
@@ -136,7 +122,7 @@
     }
 
     .drop-indicator {
-      padding: 3px !important;
+      padding: 4px !important;
       border: 1px dashed #aaa;
       text-align: center;
       text-shadow: 0px 1px 0px rgba(255,255,255,.5);
@@ -214,7 +200,7 @@
 
     .collapsible-header i {
       display: inline-block;
-      padding: 7px 10px;
+      padding: 5px 10px;
     }
 
     .collapsible-header .slider-input {
@@ -307,18 +293,122 @@
       background: #555;
       border-radius: 9px;
     }
+
+    .ui-tabs-nav li {
+      border-style: solid;
+      border-color: #ddd;
+      border-width: 0 1px 0 0;
+    }
+
+    .ui-tabs-nav li.ui-state-active {
+      border-width: 1px 0 1px 1px;
+    }
+
+    .ui-tabs-nav li a {
+      padding: 10px 0 10px 5px;
+      display: block;
+      color: #333;
+    }
+
+    .ui-tabs-nav li a:hover {
+      text-decoration: none;
+    }
+
+    #bot-switcher {
+      color: #333;
+      padding: 5px;
+      cursor: pointer;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      -o-user-select: none;
+      -webkit-user-select: none;
+      user-select: none;
+    }
+
+    #bot-switcher-dd {
+      max-height: 435px;
+      margin-bottom: -435px;
+      overflow-x: hidden;
+      overflow-y: auto;
+      background: #333;
+      color: #fff;
+      position: relative;
+      z-index: 1;
+      box-shadow: rgba(0, 0, 0, 0.4) 0px 2px 6px 0px;
+      display: none;
+    }
+
+    #bot-switcher-dd ul {
+      margin-bottom: 0px;
+    }
+
+    #bot-switcher-dd ul li {
+      box-sizing: border-box;
+      border-bottom: 1px solid #666;
+    }
+
+    #bot-switcher-dd ul li:last-child {
+      border: none;
+    }
+
+    #bot-switcher-dd ul li a {
+      color: #ddd;
+      text-decoration: none;
+      display: block;
+      padding: 5px 10px;
+    }
+
+    #bot-switcher-dd ul li a:hover {
+      background: #F3F3F3;
+      color: #333;
+    }
+
+    #bot-switcher-dd ul li a b {
+      display: inline-block;
+      text-overflow: ellipsis;
+      overflow: hidden;
+      width: 55%;
+    }
+
+    .bs-server {
+      display: inline-block;
+      text-align: right;
+      width: 32%;
+      text-transform:uppercase;
+    }
+
+    .bs-server:before {
+      content: "(";
+      margin-right: -2px;
+    }
+
+    .bs-server:after {
+      content: ")";
+      margin-left: -2px;
+    }
+
+     .bs-game {
+       display: inline-block;
+       width: 10%;
+       text-transform:uppercase;
+     }
   </style>
 </head>
 <body>
-  <div class="container" id="app">
-    <div id="app-title">
-      <svg xmlns="http://www.w3.org/2000/svg" id="invader">
-        <g transform="scale(3, 3)">
-          <path d="m 3,0 0,1 -1,0 0,1 -1,0 0,1 -1,0 0,1 0,1 2,0 0,1 1,0 0,-1 2,0 0,1 1,0 0,-1 2,0 0,-1 0,-1 -1,0 0,-1 -1,0 0,-1 -1,0 0,-1 -2,0 z m 3,6 0,1 1,0 0,-1 -1,0 z m 1,1 0,1 1,0 0,-1 -1,0 z m -1,0 -1,0 0,1 1,0 0,-1 z m -1,0 0,-1 -2,0 0,1 2,0 z m -2,0 -1,0 0,1 1,0 0,-1 z m -1,0 0,-1 -1,0 0,1 1,0 z m -1,0 -1,0 0,1 1,0 0,-1 z m 1,-4 1,0 0,1 -1,0 0,-1 z m 3,0 1,0 0,1 -1,0 0,-1 z" id="rect3061" style="fill: white; fill-opacity: 1;"></path>
-        </g>
-      </svg>
-      <span>Makielskis Bot</span>
+  <div class="container">
+    <div id="app-title" class="row-fluid">
+      <div id="bot-switcher" class="span4 btn">
+        <i class="icon-cog"></i><span> BOTS</span>
+        <div class="pull-right">
+          <i class="icon-caret-down"></i>
+        </div>
+      </div>
     </div>
+    <div class="row-fluid">
+      <div class="span4" id="bot-switcher-dd">
+      </div>
+    </div>
+    <div id="app"></div>
   </div>
   <script src="js/jquery-1.8.3.js"></script>
   <script src="js/jquery-ui-1.9.2.custom.min.js"></script>
@@ -437,7 +527,7 @@
       <div>
         <div class="row-fluid btn">
           <div class="collapsible-header span12">
-            <span class="span6"><i class="handle icon-chevron-down"></i>
+            <span class="span6"><i class="handle icon-caret-down"></i>
               <span> <%= this.label %></span>
             </span>
             <div class="offset4 span2">
@@ -469,6 +559,28 @@
         </li>
       <% } %>
     ]]>
+  </script>
+
+  <script type="text/x-jqote-template" id="tmpl_botswitcher_list">
+   <![CDATA[
+   <ul class="unstyled">
+      <% for (var bot in this.list) { %>
+          <li>
+          <a href="#">
+            <% var package = this.list[bot]['package'].slice(-2); %>
+            <span class="bs-game"><%= package %>: </span>
+            <span>
+              <b><%= this.list[bot]['username'] %></b>
+            </span>
+            <span class="pull-right bs-server">
+              <% var serverTag = bot.slice(3,5); %>
+              <span><%= serverTag %></span>
+            </span>
+          </a>
+        </li>
+      <% } %>
+    <ul>
+  ]]>
   </script>
 
   <script type="text/x-jqote-template" id="tmpl_tabs">
@@ -545,9 +657,16 @@
         "Flaschen Varkaufen": makeContainer(),
         "Missionen": makeContainer(),
         "Kämpfen": makeContainer(),
+        "Verbrechen": makeContainer(),
+        "Weiterbildung": makeContainer(),
       };
 
       var vatbs = new VTabs(containerMap, $("#app"));
+
+      var botdata = {"kv_sf_oclife":{"modules":{"boost":{"active":"0","maxmissinghealth":"5","maxmissingsatisfaction":"5","wastetolerance":"0"},"looting":{"active":"1","area":"M\\u00FCllraum","area_from":"M\\u00FCllraum,K\\u00FChlhaus,M\\u00FCllcontainer,Dusche f\\u00FCr harte Jungs,Giftm\\u00FCll-Entsorgung,Spirituosenlager,Block A,Farb-Lager,Dusche,Intensivstation,Lackiererei,Hof,Sportplatz,Block B,Waschraum,Lager,Wachraum,Krankenstation,Holzwerkstatt,Wartezimmer,Jungfrauendusche,Trockenraum,Gl\\u00FCcksspielecke,Kraftraum,Aufenthaltsraum der W\\u00E4rter,Werkstatt,Bibliothek,Kantine,B\\u00FCro des Direktors,K\\u00FCche,Speisesaal der W\\u00E4rter","auto_area":"0","caught_strategy":"bribe","caught_strategy_from":"bribe,soap,risk","gangtoll_strategy":"payToll","gangtoll_strategy_from":"payToll","timeslot":"0","timeslot_from":"0,1,2,3,4,5,6"},"mission":{"active":"1","mission_index":"2","missions":"","missions_from":"Hauptmission,Flirt-Kurs,Geld eintreiben,Müllräume säubern,Wäschetransport,Vom Gesellen zum Chefkoch,Lackierermeister,Aller Anfang ist schwer,Informationsaustausch,Sparringspartner,Erobere dir deinen Platz,Mach dir einen Namen,Heizkörper reparieren,Zelle einrichten,Nagerabschussrampe,Eiskalte Engel,Wer ist hier Psycho?,Was war los?,Burn, Direx, Burn!,In 80 Tagen aus dem Knast,Schallisolation,Der gute Samariter,Stadtguerilla-Trainingscamp,Wolke 7,Die wundersamen Wundersamen,Gib mir noch Zeit,Lenk den Wärter ab,Die Wundersalbe,Ärger machen,Ausbruchshelfer"},"train":{"active":"0","timeslot":"0","timeslot_from":"0,1,2,3,4,5,6","type":"mental","type_from":"mental,physical"}},"package":"packages/kv","proxy":"62.113.200.202:3128","server":"http://www.knastvoegel.de","username":"oclife","wait_time_factor":"1"},"pg_sy_oclife":{"modules":{"collect":{"active":"0"},"crime":{"active":"0","crime":"","crime_from":""},"fight":{"active":"0","auto":"0","blocklist":"","victims":""},"sell":{"active":"0","amount":"0","continuous":"0","price":"-1"},"study":{"active":"1","alcohol":"1","training_index":"1","trainings":"agi,","trainings_from":"att,def,agi,sprechen,bildungsstufe,musik,sozkontakte,konzentration,pickpocket"}},"package":"packages/pg","proxy":"91.228.53.28:3128","server":"http://sylt.pennergame.de","username":"oclife","wait_time_factor":"1"}};
+      var packages = {"packages":[{"name":"pg","servers":["http://berlin.pennergame.de","http://buenosaires.mendigogame.com","http://koeln.pennergame.de","http://krakow.menelgame.pl","http://marseille.clodogame.fr","http://muenchen.pennergame.de","http://reloaded.clodogame.fr","http://reloaded.mendigogame.es","http://reloaded.menelgame.pl","http://reloaded.pennergame.de","http://sampa.faveladogame.com","http://sylt.pennergame.de","http://www.bomzhuj.ru","http://www.bumrise.ae","http://www.bumrise.com","http://www.clodogame.fr","http://www.dossergame.co.uk","http://www.faveladogame.com","http://www.mendigogame.es","http://www.menelgame.pl","http://www.pennergame.de","http://www.serserionline.com"],"fight":{"module":"Kämpfen","victims":{"input_type":"list_textfield","display_name":"Gegner"},"auto":{"input_type":"checkbox","display_name":"Downfight Gegner"},"active":{"input_type":"toggle","display_name":"Kämpfen starten"}},"crime":{"module":"Verbrechen","crime":{"input_type":"dropdown","display_name":"Verbrechen"},"active":{"input_type":"toggle","display_name":"Verbrechen begehen"}},"study":{"module":"Weiterbildungen","trainings":{"input_type":"list_list","display_name":"Weiterbildungen"},"alcohol":{"input_type":"checkbox","display_name":"Betrinken"},"active":{"input_type":"toggle","display_name":"Weiterbildungen starten"}},"sell":{"module":"Flaschen verkaufen","active":{"input_type":"toggle","display_name":"Flaschen verkaufen"},"price":{"input_type":"textfield","display_name":"Verkaufspreis"},"amount":{"input_type":"textfield","display_name":"Verkaufsmenge"},"continuous":{"input_type":"checkbox","display_name":"Dauerverkaufsmodus"}},"collect":{"module":"Flaschen sammeln","active":{"input_type":"toggle","display_name":"Sammeln gehen"}}},{"name":"kv","servers":["http://www.knastvoegel.de"],"looting":{"module":"Plunder","timeslot":{"input_type":"dropdown","display_name":"Zeit"},"gangtoll_strategy":{"input_type":"dropdown","display_name":"Bandensteuer Strategie"},"active":{"input_type":"toggle","display_name":"Sammeln starten"},"auto_area":{"input_type":"checkbox","display_name":"Autom. Sammelgebiet"},"caught_strategy":{"input_type":"dropdown","display_name":"Gefasst Strategie"},"area":{"input_type":"dropdown","display_name":"Sammelgebiete"}},"boost":{"module":"Boost","maxmissinghealth":{"input_type":"textfield","display_name":"Max. fehlende Gesund."},"active":{"input_type":"toggle","display_name":"Boost starten"},"wastetolerance":{"input_type":"textfield","display_name":"Max. Verschwendung (%)"},"maxmissingsatisfaction":{"input_type":"textfield","display_name":"Max. fehlende Befr."}},"train":{"module":"Training","type":{"input_type":"dropdown","display_name":"Art"},"timeslot":{"input_type":"dropdown","display_name":"Dauer"},"active":{"input_type":"toggle","display_name":"Training starten"}},"mission":{"module":"Mission","missions":{"input_type":"list_list","display_name":"Missionen"},"active":{"input_type":"toggle","display_name":"Mission starten"}}}]};
+  
+      new BotSwitcher(botdata);
     });
   </script>
 </body>
