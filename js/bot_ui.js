@@ -213,7 +213,7 @@ $(function() {
     init: function(label, callback, state) {
       this._super(label, callback);
 
-      var newState = state !== undefined ? state : ToggleButton.states.WAIT;
+      var newState = state !== undefined ? parseInt(state) : ToggleButton.states.WAIT;
       this.element = $($("#tmpl_togglebtn").jqote({label: this.label}));
       this.element.attr("id", this.id);
       this.button = this.element.find("button");
@@ -312,6 +312,50 @@ $(function() {
 
       // call parent (log scroll update)
       this._super();
+    }
+  });
+
+  Widget("Dropdown", {
+    init: function(label, callback, initList, preselected) {
+      this._super(label, callback);
+
+      var listArray = _.isArray(initList) ? initList : [];
+
+      // create html element
+      this.element = $($("#tmpl_dropdown").jqote({label: this.label}));
+      this.element.attr("id", this.id);
+
+      this.select = this.element.find("select");
+
+      // add initial list itmes
+      this.update(initList, preselected);
+
+      // register listener
+      this.select.on("change", this.callback(this.onSelect));
+    },
+
+    update: function(newlist, preselected) {
+      if (!_.isArray(newlist)) {
+        return;
+      }
+      this.select.removeAttr("disabled");
+      this.select.empty().append($($("#tmpl_dropdown_items").jqote({list: newlist})));
+      if (_.isString(preselected)) {
+        this.select.find("option:contains(" + preselected + ")").attr("selected", true);
+      } else {
+        this.select.find("option:first").attr("selected", true);
+      }
+    },
+
+    onSelect: function(evt) {
+      this.select.attr("disabled", true);
+
+      var newlist = [];
+      newlist.push(this.select.find("option:selected").text())
+      _.each(this.select.find("option").not(":selected"), function(option) {
+        newlist.push($(option).text());
+      });
+      this.onChange(newlist);
     }
   });
 
@@ -434,7 +478,7 @@ $(function() {
 
       // create html element
       var srcListArray = !_.isUndefined(initSrcList) && _.isArray(initSrcList) ? initSrcList : [];
-      var dstListArray = !_.isUndefined(initDstList) && _.isArray(initDstText) ? initDstText : [];
+      var dstListArray = !_.isUndefined(initDstList) && _.isArray(initDstList) ? initDstList : [];
       this.element = $($("#tmpl_listinputlist").jqote({label: this.label, srcList: srcListArray, dstList: dstListArray}));
       this.element.attr("id", this.id);
 
@@ -725,20 +769,146 @@ $(function() {
   });
 
   $.Class("BotSwitcher", {
-    init: function(botdata) {
+    recreate: function(botdata) {
       var listItems = $("#tmpl_botswitcher_list").jqote({list: botdata});
       $("#bot-switcher-dd").html(listItems);
 
-      // open/close dropdown logic
-      $("#bot-switcher, #bot-switcher-dd a").click(function() {
+      $("#bot-switcher, #bot-switcher-dd a").click(function(event) {
+       // update current bot
+       if ($(event.currentTarget).is("a")) {
+        var encBotId = $(event.currentTarget).attr("data-botid");
+        var botpanel = $(document.getElementById(encBotId))
+        $(".bot-panel").hide();
+        botpanel.show();
+        $("#selected-bot").html($(event.currentTarget).html());
+       }
+
+        // hide/show
         $("#bot-switcher-dd").toggle('fade', 50, function() {
           $("#app").click(function() {
             if ($("#bot-switcher-dd").is(":visible")) {
-               $("#bot-switcher-dd").hide('fade', 50);
+              $("#bot-switcher-dd").hide('fade', 50);
             }
           });
         });
       });
     }
+  }, {});
+
+  $.Class("InterfaceCreator", {
+    inputMap: {
+      "toggle": ToggleButton,
+      "checkbox": Checkbox,
+      "textfield": TextInput,
+      "dropdown": Dropdown,
+      "list_textfield": TextInputList,
+      "list_list": ListInputList,
+    },
+  } ,{
+    init: function(botdata, packagedata, parent) {
+      this.botdata = botdata;
+      this.packagedata = packagedata.packages;
+      this.parent = parent
+
+      // Bot Selector
+      BotSwitcher.recreate(this.botdata);
+
+      _.each(_.keys(this.botdata), function(botid) {
+        var panel = this.makeControlPanel(botid).hide().addClass("bot-panel");
+        this.parent.append(panel);
+      }, this);
+    },
+
+    makeControlPanel: function(botid) {
+      var encBotId = encodeURIComponent(botid);
+      var botPackage = _.last(this.botdata[botid]['package'].split("/"));
+
+      var wrapper = $("<div>").attr("id", encBotId);
+
+      var containermap = {};
+      _.each(this.botdata[botid]['modules'], function(moduleconfig, moduleName) {
+          var widgets = {};
+
+          _.each(moduleconfig, function(propertyvalue, propertyname) {
+            var inputSpecs = this.getInputSpecs(botPackage, moduleName, propertyname);
+            if (inputSpecs !== undefined) {
+              var inputType = inputSpecs["input_type"];
+
+              var displayName = inputSpecs["display_name"];
+
+              var initValue1;
+              var initValue2;
+              switch(inputType) {
+                case "dropdown":
+                  var val = moduleconfig[propertyname + "_from"];
+                  var empty = val === "";
+
+                  if (val.slice(-1) === ",") {
+                    val = val.slice(0, -1);
+                  }
+
+                  initValue1 = empty ? [] : val.split(",");
+                  initValue2 = propertyvalue;
+                  break;
+                case "list_textfield":
+                  var val = propertyvalue;
+                  var empty = val === "";
+
+                  if (val.slice(-1) === ",") {
+                    val1 = val.slice(0, -1);
+                  }
+
+                  initValue1 = empty ? [] : val.split(",");
+                  break;
+                case "list_list":
+                  var val1 = moduleconfig[propertyname + "_from"];
+                  var val2 = propertyvalue;
+
+                  var empty1 = val1 === "";
+                  var empty2 = val2 === "";
+
+                  if (val1.slice(-1) === ",") {
+                    val1 = val1.slice(0, -1);
+                  }
+
+                  if (val2.slice(-1) === ",") {
+                    val2 = val2.slice(0, -1);
+                  }
+
+                  initValue1 = empty1 ? [] : val1.split(",");
+                  initValue2 = empty2 ? [] : val2.split(",");
+                  break;
+                default:
+                  initValue1 = propertyvalue;
+              }
+
+              var newInput = new InterfaceCreator.inputMap[inputType](displayName, this.dummyServer, initValue1, initValue2);
+              widgets[moduleName + "_" + propertyname] = newInput;
+            }
+          }, this);
+
+          var widgetcontainer = new WidgetContainer(widgets);
+          containermap[this.getModuleDisplayName(botPackage, moduleName)] = widgetcontainer;
+      }, this);
+
+      new VTabs(containermap, wrapper)
+      return wrapper;
+    },
+
+    getInputSpecs: function(botPackage, module, property) {
+      var packagedata = _.where(this.packagedata, {name: botPackage})[0];
+      return packagedata[module][property];
+    },
+
+    getModuleDisplayName: function(botPackage, module) {
+      var packagedata = _.where(this.packagedata, {name: botPackage})[0];
+      return packagedata[module]['module'];
+    },
+
+    dummyServer: function(arg) {
+      var update = _.bind(this.update, this);
+      _.delay(update, 250, arg);
+      //widgets.logger.update(initMessages[_.random(0, initMessages.length)]);
+    },
   });
 });
