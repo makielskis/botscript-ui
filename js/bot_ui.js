@@ -265,6 +265,7 @@ $(function() {
       this.element = $($("#tmpl_textinput").jqote({label: this.label, value: value}));
       this.element.attr("id", this.id);
       this.input = this.element.find("input");
+      this.placeholder = this.element.find("div.placeholder").hide();
 
       this.changed = false;
 
@@ -272,10 +273,15 @@ $(function() {
     },
 
     onEdit: function() {
+      this.input.attr("disabled", true).hide();
+      this.placeholder.show();
       this.onChange(this.input.val());
     },
 
     update: function(newValue) {
+      this.input.removeAttr("disabled").show();
+      this.placeholder.hide();
+
       this.input.attr("value", newValue);
       this.input.effect('highlight');
 
@@ -328,34 +334,32 @@ $(function() {
       this.select = this.element.find("select");
 
       // add initial list itmes
-      this.update(initList, preselected);
+      this.update(initList, true);
+      this.update(preselected, false);
 
       // register listener
       this.select.on("change", this.callback(this.onSelect));
     },
 
-    update: function(newlist, preselected) {
-      if (!_.isArray(newlist)) {
-        return;
+    update: function(update, isListUpdate) {
+      if (isListUpdate || _.isArray(update)) {
+        if (_.isString(update)) {
+          if (update.slice(-1) === ",") {
+            update = update.slice(0, -1);
+          }
+          update = update.split(",");
+        }
+        this.select.removeAttr("disabled");
+        this.select.empty().append($($("#tmpl_dropdown_items").jqote({list: update})));
+      } else {
+        this.select.find("option:contains(" + update + ")").attr("selected", true);
       }
       this.select.removeAttr("disabled");
-      this.select.empty().append($($("#tmpl_dropdown_items").jqote({list: newlist})));
-      if (_.isString(preselected)) {
-        this.select.find("option:contains(" + preselected + ")").attr("selected", true);
-      } else {
-        this.select.find("option:first").attr("selected", true);
-      }
     },
 
     onSelect: function(evt) {
       this.select.attr("disabled", true);
-
-      var newlist = [];
-      newlist.push(this.select.find("option:selected").text())
-      _.each(this.select.find("option").not(":selected"), function(option) {
-        newlist.push($(option).text());
-      });
-      this.onChange(newlist);
+      this.onChange(this.select.find("option:selected").text());
     }
   });
 
@@ -427,14 +431,14 @@ $(function() {
         this.disableInputs(true);
 
         // add the new list item
-        var newList = this.getListItems();
-        newList.push(this.input.val());
+        var newlist = this.getListItems();
+        newlist.push(this.input.val());
 
         // reset input
         this.input.val("")
 
         // notify
-        this.onChange(newList);
+        this.onChange(newlist);
       }
     },
 
@@ -445,9 +449,16 @@ $(function() {
       this.onChange(this.getListItems());
     },
 
-    update: function(newList) {
+    update: function(newlist) {
+      if (_.isString(newlist)) {
+        if (newlist.slice(-1) === ",") {
+          newlist = newlist.slice(0, -1);
+        }
+        newlist = newlist.split(",");
+      }
+
       // create html list items
-      var listItems = $($("#tmpl_listitems").jqote({list: newList, handles: true}));
+      var listItems = $($("#tmpl_listitems").jqote({list: newlist, handles: true}));
 
       var removeHandler = this.callback(function(evt) {
         $(evt.target).parents("li").remove();
@@ -488,7 +499,8 @@ $(function() {
       this.placeholder = this.element.find("div.column3 div.placeholder");
 
       // add initial list itmes
-      this.update({srcList: srcListArray, dstList: dstListArray});
+      this.update(srcListArray, true);
+      this.update(dstListArray, false);
 
       // destination sortable initialisation
       this.dstList.sortable({
@@ -539,19 +551,23 @@ $(function() {
 
     onDstListChange: function() {
       this.disableInput(true);
-      this.onChange({dstList: this.getListItems()});
+      this.onChange(this.getListItems());
     },
 
-    update: function(news) {
+    update: function(newlist, isSrcList) {
       // it is a new source list
-      if(_.isArray(news.srcList)) {
-        this.srcList.html($("#tmpl_listitems").jqote({list: news.srcList, handles: false}));
+      if (_.isString(newlist)) {
+        if (newlist.slice(-1) === ",") {
+          newlist = newlist.slice(0, -1);
+        }
+        newlist = newlist.split(",");
       }
 
-      // it is a new destination list
-      if(_.isArray(news.dstList)) {
+      if(isSrcList) {
+        this.srcList.html($("#tmpl_listitems").jqote({list: newlist, handles: false}));
+      } else {
         // create html list items
-        var listItems = $($("#tmpl_listitems").jqote({list: news.dstList, handles: true}));
+        var listItems = $($("#tmpl_listitems").jqote({list: newlist, handles: true}));
 
         var removeHandler = this.callback(function(evt) {
           $(evt.target).parents("li").remove();
@@ -569,14 +585,13 @@ $(function() {
         var dropIndicator = $('<li class="drop-indicator"><i class="icon-download-alt"></i></li>');
 
         // update list
-        this.dstList.html("").append(listItems).append(dropIndicator);
+        this.dstList.empty().append(listItems).append(dropIndicator);
 
         // re-enable inputs
         this.disableInput(false);
-
-        // call parent (log scroll update)
-        this._super();
       }
+      // call parent (log scroll update)
+      this._super();
     }
   });
 
@@ -769,17 +784,17 @@ $(function() {
   });
 
   $.Class("BotSwitcher", {
-    recreate: function(botdata) {
-      var listItems = $("#tmpl_botswitcher_list").jqote({list: botdata});
+    recreate: function(panels) {
+      var listItems = $("#tmpl_botswitcher_list").jqote({list: panels});
       $("#bot-switcher-dd").html(listItems);
 
       $("#bot-switcher, #bot-switcher-dd a").click(function(event) {
-       // update current bot
        if ($(event.currentTarget).is("a")) {
-        var encBotId = $(event.currentTarget).attr("data-botid");
-        var botpanel = $(document.getElementById(encBotId))
-        $(".bot-panel").hide();
-        botpanel.show();
+        var botid = decodeURIComponent($(event.currentTarget).attr("data-botid"));
+        _.each(panels, function(panel) {
+          panel.hide();
+        });
+        panels[botid].show();
         $("#selected-bot").html($(event.currentTarget).html());
        }
 
@@ -805,24 +820,64 @@ $(function() {
       "list_list": ListInputList,
     },
   } ,{
-    init: function(botdata, packagedata, parent) {
-      this.botdata = botdata;
-      this.packagedata = packagedata.packages;
-      this.parent = parent
+    init: function(parent, connection) {
+      this.parent = parent;
+      this.connection = connection;
 
-      // Bot Selector
-      BotSwitcher.recreate(this.botdata);
+      var onBotList = _.bind(function(bots, packages) {
+        this.botdata = bots;
+        this.packagedata = packages;
+        this.recreateInterface();
+      }, this);
+
+      var onUpdate = _.bind(function(botid, module, property, value) {
+        console.log("got update", arguments);
+        var isFromProperty = false;
+        if (property.slice(-5) === "_from") {
+          property = property.slice(0, -5);
+          isFromProperty = true;
+        }
+        this.widgets[botid][module][property].update(value, isFromProperty);
+        // update coresponding widget
+      }, this);
+
+      var onEvent = _.bind(function(botid, key, value) {
+        // display a coresponding message
+      }, this);
+
+      var onAccount = _.bind(function(action, succes) {
+        // display a coresponding message
+      }, this);
+
+      this.connection.setCallbacks(onBotList, onUpdate, onEvent, onAccount);
+      this.connection.connect();
+    },
+
+    recreateInterface: function() {
+      var panels = {};
+      this.widgets = {}
 
       _.each(_.keys(this.botdata), function(botid) {
-        var panel = this.makeControlPanel(botid).hide().addClass("bot-panel");
+        var result = this.makeControlPanel(botid);
+
+        var panel = result['panel'].hide().addClass("bot-panel");
+        panels[botid] = panel;
+
+        var botWidgets = result['widgets'];
+        this.widgets[botid] = botWidgets;
+
         this.parent.append(panel);
       }, this);
+
+      this.panels = panels;
+      BotSwitcher.recreate(panels);
     },
 
     makeControlPanel: function(botid) {
       var encBotId = encodeURIComponent(botid);
       var botPackage = _.last(this.botdata[botid]['package'].split("/"));
 
+      var interfaceMap = {};
       var wrapper = $("<div>").attr("id", encBotId);
 
       var containermap = {};
@@ -882,17 +937,19 @@ $(function() {
                   initValue1 = propertyvalue;
               }
 
-              var newInput = new InterfaceCreator.inputMap[inputType](displayName, this.dummyServer, initValue1, initValue2);
+              var newInput = new InterfaceCreator.inputMap[inputType](displayName, _.bind(this.changeListener, this, botid, moduleName, propertyname), initValue1, initValue2);
               widgets[moduleName + "_" + propertyname] = newInput;
             }
           }, this);
 
           var widgetcontainer = new WidgetContainer(widgets);
           containermap[this.getModuleDisplayName(botPackage, moduleName)] = widgetcontainer;
+          interfaceMap[moduleName] = widgets;
       }, this);
 
       new VTabs(containermap, wrapper)
-      return wrapper;
+
+      return {'panel': wrapper, 'widgets': interfaceMap};
     },
 
     getInputSpecs: function(botPackage, module, property) {
@@ -905,10 +962,116 @@ $(function() {
       return packagedata[module]['module'];
     },
 
-    dummyServer: function(arg) {
-      var update = _.bind(this.update, this);
-      _.delay(update, 250, arg);
-      //widgets.logger.update(initMessages[_.random(0, initMessages.length)]);
+    changeListener: function(botid, modulename, propertyname, value) {
+      // var update = _.bind(this.update, this);
+      // _.delay(update, 250, arg);
+      this.connection.onInputChange(botid, modulename, propertyname, value);
+    },
+  });
+
+  $.Class("ServerConnection", {
+
+    // will be set by InterfaceCreator
+    // called when server sends an 'bots' message
+    onBotList: function(bots, packages) {},
+
+    // will be set by InterfaceCreator
+    // called when server sends an 'update' message
+    onUpdate: function(botid, module, property, value) {},
+
+    // will be set by InterfaceCreator
+    // called when server sends an 'event' message
+    onEvent: function(botid, key, value) {},
+
+    // will be set by InterfaceCreator
+    // called when server sends an 'account' message
+    onAccount: function(action, success) {},
+
+    init: function() {},
+
+    connect: function() {
+      this.ws = new WebSocket('ws://localhost:8000');
+      this.ws.onopen = _.bind(this.onopen, this);
+      this.ws.onmessage = _.bind(this.onmessage, this);
+    },
+
+    onopen: function(event) {
+      console.log(event);
+    },
+
+    onmessage: function(event) {
+      var messageHandler = function messageHandler(msg) {
+        switch (msg.type) {
+          case "packages":
+            this.packages = msg.arguments.packages;
+            break;
+          case "session":
+            $.cookie("bs_session", msg.arguments.sid, parseInt(msg.arguments.expires) * 1000);
+            break;
+          case "bots":
+            var bots = msg.arguments;
+            if (_.isObject(this.packages)) {
+              this.onBotList(bots, this.packages);
+            }
+            break;
+          case "update":
+            var splitKey = msg.arguments.key.split("_", 1);
+            this.onUpdate(msg.arguments.identifier, splitKey[0], msg.arguments.key, msg.arguments.value);
+            break;
+          case "event":
+            this.onEvent(msg.arguments.identifier, msg.arguments.key, msg.arguments.value);
+            break;
+          case "account":
+            this.onAccount(msg.argument.key, msg.arguments.success);
+            break;
+        }
+      }
+
+      try {
+        var msg = JSON.parse(event.data);
+        if (_.has(msg, 'type') && _.has(msg, 'arguments')) {
+          _.bind(messageHandler, this, msg)();
+        } else {
+          console.log("incomplete update");
+        }
+      } catch (exception) {
+        throw exception;
+      }
+    },
+
+    createInterface: function() {
+      if (_.isObject(this.packages) && _.isObject(this.bots)) {
+        if (_.isUndefined(this.interfaceCreator)) {
+          this.interfaceCreator = new InterfaceCreator(botdata, packages, $("#app"))
+        }
+      }
+    },
+
+    setCallbacks: function(onBotList, onUpdate, onEvent, onAccount) {
+      // TODO: check if args are all functions
+      this.onBotList = onBotList;
+      this.onUpdate = onUpdate;
+      this.onEvent = onEvent;
+      this.onAccount = onAccount;
+    },
+
+    onInputChange: function(botid, modulename, propertyname, value) {
+      var command = modulename + "_set_" + propertyname;
+      var value = _.isArray(value) ? value.join() : value;
+      var msg = JSON.stringify({
+        'type': 'bot',
+        'arguments': {
+          'sid': $.cookie("bs_session"),
+          'identifier': botid,
+          'execute': {
+            'command': command,
+            'argument': value,
+          },
+        },
+      });
+      this.ws.send(msg);
+      console.log(msg);
     },
   });
 });
+

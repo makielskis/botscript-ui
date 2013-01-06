@@ -431,6 +431,7 @@
   <script src="js/jquerymx-3.2.custom.js"></script>
   <script src="js/jquery.jqote2.js"></script>
   <script src="js/jquery.nicescroll.js"></script>
+  <script src="js/jquery.cookie.js"></script>
   <script src="js/underscore.js"></script>
   <script src="js/bot_ui.js"></script>
 
@@ -459,6 +460,7 @@
         </div>
         <div class="span4 column3">
           <input type="text" class="span12" value="<%= this.value %>"/>
+          <div class="placeholder"></div>
         </div>
       </div>
     ]]>
@@ -644,66 +646,11 @@
 
   <script>
     $(function() {
-      var server = function(arg) {
-        var update = _.bind(this.update, this);
-        _.delay(update, 250, arg);
-      //widgets.logger.update(initMessages[_.random(0, initMessages.length)]);
-      };
 
-      var initMessages = [
-        "[INFO ][30.12 13:16:37][pg_sy_oclife ] starting",
-        "[INFO ][30.12 13:16:37][pg_sy_oclife ] restarting from begin",
-        "[DEBUG][30.12 13:16:37][pg_sy_oclife ] setting training_index to 1",
-        "[DEBUG][30.12 13:16:37][pg_sy_oclife ] getting pennerbar",
-        "[INFO ][30.12 13:16:37][pg_sy_oclife ] wait for running training to finish",
-        "[INFO ][30.12 13:16:37][pg_sy_oclife ] sleeping 11506s",
-        "[INFO ][30.12 16:28:36][pg_sy_oclife ] starting",
-        "[ERROR][30.12 22:08:51][kv_sf_oclife ] territory id not found - retrying",
-        "[ERROR][30.12 22:08:51][kv_sf_oclife ] sleeping 113s",
-        "[DEBUG][30.12 16:28:36][pg_sy_oclife ] getting pennerbar",
-        "[DEBUG][30.12 16:28:36][pg_sy_oclife ] next training: agi",
-        "[DEBUG][30.12 16:28:36][pg_sy_oclife ] getting study page",
-        "[DEBUG][30.12 16:28:36][pg_sy_oclife ] reading mystery id",
-        "[INFO ][30.12 16:28:37][pg_sy_oclife ] buying 9 breads",
-        "[INFO ][30.12 16:28:37][pg_sy_oclife ] buying 8 beers",
-        "[INFO ][30.12 16:28:38][pg_sy_oclife ] drinking 8 beers",
-        "[INFO ][30.12 16:28:39][pg_sy_oclife ] starting training: agi",
-        "[INFO ][30.12 16:28:40][pg_sy_oclife ] eating 9 breads",
-        "[DEBUG][30.12 16:28:41][pg_sy_oclife ] setting training_index to 2",
-        "[DEBUG][30.12 16:28:41][pg_sy_oclife ] getting pennerbar",
-        "[INFO ][30.12 16:28:41][pg_sy_oclife ] sleeping 84965s"
-      ];
-/*
-      function makeContainer() {
-        var widgets = {
-          button: new ToggleButton("Flaschen verkaufen", server, ToggleButton.states.OFF),
-          input: new TextInput("Min. Verkaufspreis", server, "default Value"),
-          checkbox: new Checkbox("Min. Verkaufspreis", server),
-          textlist: new TextInputList("Gegner", server, ["Anti-Flag", "Rise Against", "Rage Against the Mashine"]),
-          listlist: new ListInputList("Playlist", server, ["Anti-Flag", "Rise Against", "Rage Against the Mashine"], ["Anti-Flag"]),
-          slider: new SliderInput("WTF", server, 0.1, 2, 0.1, 1),
-          dropdown: new Dropdown("Lieblingsband", server, ["Anti-Flag", "Rise Against", "Rage Against the Mashine"]),
-          logger: new Log("Log", initMessages)
-        };
-        return new WidgetContainer(widgets);
-      }
-
-      var containerMap = {
-        "Flaschen Sammeln": makeContainer(),
-        "Flaschen Varkaufen": makeContainer(),
-        "Missionen": makeContainer(),
-        "Kämpfen": makeContainer(),
-        "Verbrechen": makeContainer(),
-        "Weiterbildung": makeContainer(),
-      };
-
-    //  var vatbs = new VTabs(containerMap, $("#app"));
-*/
       var botdata = {"kv_sf_\"disabled":{"modules":{"boost":{"active":"0","maxmissinghealth":"5","maxmissingsatisfaction":"5","wastetolerance":"0"},"looting":{"active":"1","area":"M\\u00FCllraum","area_from":"M\\u00FCllraum,K\\u00FChlhaus,M\\u00FCllcontainer,Dusche f\\u00FCr harte Jungs,Giftm\\u00FCll-Entsorgung,Spirituosenlager,Block A,Farb-Lager,Dusche,Intensivstation,Lackiererei,Hof,Sportplatz,Block B,Waschraum,Lager,Wachraum,Krankenstation,Holzwerkstatt,Wartezimmer,Jungfrauendusche,Trockenraum,Gl\\u00FCcksspielecke,Kraftraum,Aufenthaltsraum der W\\u00E4rter,Werkstatt,Bibliothek,Kantine,B\\u00FCro des Direktors,K\\u00FCche,Speisesaal der W\\u00E4rter","auto_area":"0","caught_strategy":"bribe","caught_strategy_from":"bribe,soap,risk","gangtoll_strategy":"payToll","gangtoll_strategy_from":"payToll","timeslot":"0","timeslot_from":"0,1,2,3,4,5,6"},"mission":{"active":"1","mission_index":"2","missions":"","missions_from":"Hauptmission,Flirt-Kurs,Geld eintreiben,Müllräume säubern,Wäschetransport,Vom Gesellen zum Chefkoch,Lackierermeister,Aller Anfang ist schwer,Informationsaustausch,Sparringspartner,Erobere dir deinen Platz,Mach dir einen Namen,Heizkörper reparieren,Zelle einrichten,Nagerabschussrampe,Eiskalte Engel,Wer ist hier Psycho?,Was war los?,Burn, Direx, Burn!,In 80 Tagen aus dem Knast,Schallisolation,Der gute Samariter,Stadtguerilla-Trainingscamp,Wolke 7,Die wundersamen Wundersamen,Gib mir noch Zeit,Lenk den Wärter ab,Die Wundersalbe,Ärger machen,Ausbruchshelfer"},"train":{"active":"0","timeslot":"0","timeslot_from":"0,1,2,3,4,5,6","type":"mental","type_from":"mental,physical"}},"package":"packages/kv","proxy":"62.113.200.202:3128","server":"http://www.knastvoegel.de","username":"\"disabled","wait_time_factor":"1"},"pg_sy_oclife":{"modules":{"collect":{"active":"0"},"crime":{"active":"0","crime":"","crime_from":""},"fight":{"active":"0","auto":"0","blocklist":"","victims":""},"sell":{"active":"0","amount":"0","continuous":"0","price":"-1"},"study":{"active":"1","alcohol":"1","training_index":"1","trainings":"agi,","trainings_from":"att,def,agi,sprechen,bildungsstufe,musik,sozkontakte,konzentration,pickpocket"}},"package":"packages/pg","proxy":"91.228.53.28:3128","server":"http://sylt.pennergame.de","username":"oclife","wait_time_factor":"1"}};
       var packages = {"packages":[{"name":"pg","servers":["http://berlin.pennergame.de","http://buenosaires.mendigogame.com","http://koeln.pennergame.de","http://krakow.menelgame.pl","http://marseille.clodogame.fr","http://muenchen.pennergame.de","http://reloaded.clodogame.fr","http://reloaded.mendigogame.es","http://reloaded.menelgame.pl","http://reloaded.pennergame.de","http://sampa.faveladogame.com","http://sylt.pennergame.de","http://www.bomzhuj.ru","http://www.bumrise.ae","http://www.bumrise.com","http://www.clodogame.fr","http://www.dossergame.co.uk","http://www.faveladogame.com","http://www.mendigogame.es","http://www.menelgame.pl","http://www.pennergame.de","http://www.serserionline.com"],"fight":{"module":"Kämpfen","victims":{"input_type":"list_textfield","display_name":"Gegner"},"auto":{"input_type":"checkbox","display_name":"Downfight Gegner"},"active":{"input_type":"toggle","display_name":"Kämpfen starten"}},"crime":{"module":"Verbrechen","crime":{"input_type":"dropdown","display_name":"Verbrechen"},"active":{"input_type":"toggle","display_name":"Verbrechen begehen"}},"study":{"module":"Weiterbildungen","trainings":{"input_type":"list_list","display_name":"Weiterbildungen"},"alcohol":{"input_type":"checkbox","display_name":"Betrinken"},"active":{"input_type":"toggle","display_name":"Weiterbildungen starten"}},"sell":{"module":"Flaschen verkaufen","active":{"input_type":"toggle","display_name":"Flaschen verkaufen"},"price":{"input_type":"textfield","display_name":"Verkaufspreis"},"amount":{"input_type":"textfield","display_name":"Verkaufsmenge"},"continuous":{"input_type":"checkbox","display_name":"Dauerverkaufsmodus"}},"collect":{"module":"Flaschen sammeln","active":{"input_type":"toggle","display_name":"Sammeln gehen"}}},{"name":"kv","servers":["http://www.knastvoegel.de"],"looting":{"module":"Plunder","timeslot":{"input_type":"dropdown","display_name":"Zeit"},"gangtoll_strategy":{"input_type":"dropdown","display_name":"Bandensteuer Strategie"},"active":{"input_type":"toggle","display_name":"Sammeln starten"},"auto_area":{"input_type":"checkbox","display_name":"Autom. Sammelgebiet"},"caught_strategy":{"input_type":"dropdown","display_name":"Gefasst Strategie"},"area":{"input_type":"dropdown","display_name":"Sammelgebiete"}},"boost":{"module":"Boost","maxmissinghealth":{"input_type":"textfield","display_name":"Max. fehlende Gesund."},"active":{"input_type":"toggle","display_name":"Boost starten"},"wastetolerance":{"input_type":"textfield","display_name":"Max. Verschwendung (%)"},"maxmissingsatisfaction":{"input_type":"textfield","display_name":"Max. fehlende Befr."}},"train":{"module":"Training","type":{"input_type":"dropdown","display_name":"Art"},"timeslot":{"input_type":"dropdown","display_name":"Dauer"},"active":{"input_type":"toggle","display_name":"Training starten"}},"mission":{"module":"Mission","missions":{"input_type":"list_list","display_name":"Missionen"},"active":{"input_type":"toggle","display_name":"Mission starten"}}}]};
 
-      var creator = new InterfaceCreator(botdata, packages, $("#app"));
-//      $("#app").append(creator.makeControlPanel("kv_sf_\"disabled"));
+      var creator = new InterfaceCreator($("#app"), new ServerConnection());
     });
   </script>
 </body>
