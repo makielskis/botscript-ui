@@ -395,6 +395,7 @@ $(function() {
       this.list.on("sortupdate", this.callback(this.onSort));
       this.input.keyup(this.callback(this.onAdd));
       this.addButton.click(this.callback(this.onAdd));
+      this.addButton.find("i").click(this.callback(this.onAdd));
     },
 
     getListItems: function() {
@@ -868,6 +869,9 @@ $(function() {
 
         this.parent.append(panel);
       }, this);
+
+      // show first panel
+      _(panels).values()[1].show();
 
       this.panels = panels;
       BotSwitcher.recreate(panels);
