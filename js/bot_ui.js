@@ -27,8 +27,11 @@ $(function() {
     selector: "#staticpanels div[data-panelid='createbot']",
 
     init: function(connection, packagedata) {
+      this.form = $(this.selector);
       this.connection = connection;
-      this.form = $(this.selector)
+
+      this.logWidget = new Log("Log", []);
+      $("#createbot_log").append(this.logWidget.element);
 
       if (_.isArray(packagedata)) {
         this.setupForm(packagedata);
@@ -930,6 +933,10 @@ $(function() {
       this.parent = parent;
       this.connection = connection;
 
+      var onPackages = _.bind(function(packages) {
+          this.createbotForm = new CreateBotForm(this.connection, packages);
+      }, this);
+
       var onBotList = _.bind(function(bots, packages) {
         this.botdata = bots;
         this.packagedata = packages;
@@ -948,14 +955,16 @@ $(function() {
       }, this);
 
       var onEvent = _.bind(function(botid, key, value) {
-        // display a coresponding message
+        if (key === "newbot") {
+          this.createbotForm.logWidget.update(value);
+        }
       }, this);
 
       var onAccount = _.bind(function(action, succes) {
         // display a coresponding message
       }, this);
 
-      this.connection.setCallbacks(onBotList, onUpdate, onEvent, onAccount);
+      this.connection.setCallbacks(onPackages, onBotList, onUpdate, onEvent, onAccount);
       this.connection.connect();
     },
 
@@ -1053,6 +1062,10 @@ $(function() {
   $.Class("ServerConnection", {
 
     // will be set by InterfaceCreator
+    // called when server sends an 'packages' message
+    onPackages: function(packages) {},
+
+    // will be set by InterfaceCreator
     // called when server sends an 'bots' message
     onBotList: function(bots, packages) {},
 
@@ -1068,24 +1081,27 @@ $(function() {
     // called when server sends an 'account' message
     onAccount: function(action, success) {},
 
+    // empty constructor
     init: function() {},
 
+    // connect the socket
     connect: function() {
       this.ws = new WebSocket('ws://localhost:8000');
       this.ws.onopen = _.bind(this.onopen, this);
       this.ws.onmessage = _.bind(this.onmessage, this);
     },
 
+    // called when the socket is connected
     onopen: function(event) {
-      console.log(event);
     },
 
+    // called when a message arrives
     onmessage: function(event) {
       var messageHandler = function messageHandler(msg) {
         switch (msg.type) {
           case "packages":
             this.packages = msg.arguments.packages;
-            new CreateBotForm(this, this.packages);
+            this.onPackages(this.packages);
             break;
           case "session":
             $.cookie("bs_session", msg.arguments.sid, parseInt(msg.arguments.expires) * 1000);
@@ -1129,8 +1145,9 @@ $(function() {
       }
     },
 
-    setCallbacks: function(onBotList, onUpdate, onEvent, onAccount) {
+    setCallbacks: function(onPackages, onBotList, onUpdate, onEvent, onAccount) {
       // TODO: check if args are all functions
+      this.onPackages = onPackages;
       this.onBotList = onBotList;
       this.onUpdate = onUpdate;
       this.onEvent = onEvent;
