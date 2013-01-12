@@ -2,6 +2,99 @@ $(function() {
 
   "use strict";
 
+  $.Class('Util', {
+    splitString: function(input) {
+      var output;
+      if (_.isString(input)) {
+        // strip last comma if there
+        if (input.slice(-1) === ",") {
+          output = input.slice(0, -1);
+        } else {
+          output = input;
+        }
+        // empty string means empty arrary
+        if (output === "") {
+          output = [];
+        } else {
+          output = output.split(",");
+        }
+      }
+      return output;
+    },
+  }, {}),
+
+  $.Class('CreateBotForm', {
+    selector: "#staticpanels div[data-panelid='createbot']",
+
+    init: function(connection, packagedata) {
+      this.connection = connection;
+      this.form = $(this.selector)
+
+      if (_.isArray(packagedata)) {
+        this.setupForm(packagedata);
+      }
+    },
+
+    setupForm: function(packagedata) {
+      // get inputs
+      var botPackageInput = this.form.find("select[name=package]");
+      var serverInput = this.form.find("select[name=server]");
+
+      // fill package select
+      _(packagedata).each(function(botpackage) {
+        var packageOption = $("<option>").text(botpackage['name']);
+        packageOption.appendTo(botPackageInput);
+
+        // fill server select
+        _(botpackage.servers).each(function(server) {
+          var serverOption = $("<option>").text(server);
+          serverOption.appendTo(serverInput);
+        });
+      });
+
+      this.form.find("button[name=submit]").click(_.bind(this.submit, this));
+    },
+
+    submit: function() {
+      // get inputs
+      var playernameInput = this.form.find("input[name=playername]").removeClass("error");
+      var passwordInput = this.form.find("input[name=password]").removeClass("error");
+      var botPackageInput = this.form.find("select[name=package]").removeClass("error");
+      var serverInput = this.form.find("select[name=server]").removeClass("error");
+      var proxiesInput = this.form.find("textarea[name=proxies]").removeClass("error");
+
+      // get input values
+      var playername = playernameInput.val();
+      var password = passwordInput.val();
+      var botPackage = botPackageInput.val();
+      var server = serverInput.val();
+      var proxies = proxiesInput.val();
+
+      // validate
+      var valid = true;
+      if (_(playername).isEmpty()) {
+        playernameInput.addClass("error");
+        valid = false;
+      }
+      if (_(password).isEmpty()) {
+        passwordInput.addClass("error");
+        valid = false;
+      }
+      if (_(botPackage).isEmpty()) {
+        botPackageInput.addClass("error");
+        valid = false;
+      }
+      if (_(server).isEmpty()) {
+        serverInput.addClass("error");
+        valid = false;
+      }
+      if (!valid) return;
+
+      // send request
+      this.connection.createNewBot(playername, password, botPackage, server, proxies);
+    },
+  }),
+
   $.Class('Accordion', {
     idPrefix: "accordion",
     idCounter: 0,
@@ -267,8 +360,6 @@ $(function() {
       this.input = this.element.find("input");
       this.placeholder = this.element.find("div.placeholder").hide();
 
-      this.changed = false;
-
       this.input.blur(this.callback(this.onEdit));
     },
 
@@ -286,7 +377,21 @@ $(function() {
       this.input.effect('highlight');
 
       // call parent (log scroll update)
-      this._super()
+      this._super();
+    }
+  });
+
+  TextInput("TextArea", {
+    init: function(label, callback, initValue) {
+      this._super(label, callback, initValue);
+
+      var value = initValue || "";
+      this.element = $($("#tmpl_textarea").jqote({label: this.label, value: value}));
+      this.element.attr("id", this.id);
+      this.input = this.element.find("textarea");
+      this.placeholder = this.element.find("div.placeholder").hide();
+
+      this.input.blur(this.callback(this.onEdit));
     }
   });
 
@@ -342,14 +447,8 @@ $(function() {
     },
 
     update: function(update, isListUpdate) {
-      if (isListUpdate || _.isArray(update)) {
-        if (_.isString(update)) {
-          if (update.slice(-1) === ",") {
-            update = update.slice(0, -1);
-          }
-          update = update.split(",");
-        }
-        this.select.removeAttr("disabled");
+      if (isListUpdate) {
+        update = Util.splitString(update);
         this.select.empty().append($($("#tmpl_dropdown_items").jqote({list: update})));
       } else {
         this.select.find("option:contains(" + update + ")").attr("selected", true);
@@ -368,9 +467,7 @@ $(function() {
       this._super(label, callback);
 
       // create html element
-      var listArray = _.isArray(initList) ? initList : [];
-      var inputValue = _.isString(initText) ? initText : "";
-      this.element = $($("#tmpl_textinputlist").jqote({label: this.label, list: listArray, text: inputValue}));
+      this.element = $($("#tmpl_textinputlist").jqote({label: this.label}));
       this.element.attr("id", this.id);
 
       // save references
@@ -451,12 +548,7 @@ $(function() {
     },
 
     update: function(newlist) {
-      if (_.isString(newlist)) {
-        if (newlist.slice(-1) === ",") {
-          newlist = newlist.slice(0, -1);
-        }
-        newlist = newlist.split(",");
-      }
+      newlist = Util.splitString(newlist);
 
       // create html list items
       var listItems = $($("#tmpl_listitems").jqote({list: newlist, handles: true}));
@@ -489,9 +581,7 @@ $(function() {
       this._super(label, callback);
 
       // create html element
-      var srcListArray = !_.isUndefined(initSrcList) && _.isArray(initSrcList) ? initSrcList : [];
-      var dstListArray = !_.isUndefined(initDstList) && _.isArray(initDstList) ? initDstList : [];
-      this.element = $($("#tmpl_listinputlist").jqote({label: this.label, srcList: srcListArray, dstList: dstListArray}));
+      this.element = $($("#tmpl_listinputlist").jqote({label: this.label}));
       this.element.attr("id", this.id);
 
       // save references
@@ -500,8 +590,8 @@ $(function() {
       this.placeholder = this.element.find("div.column3 div.placeholder");
 
       // add initial list itmes
-      this.update(srcListArray, true);
-      this.update(dstListArray, false);
+      this.update(initSrcList, true);
+      this.update(initDstList, false);
 
       // destination sortable initialisation
       this.dstList.sortable({
@@ -556,17 +646,13 @@ $(function() {
     },
 
     update: function(newlist, isSrcList) {
-      // it is a new source list
-      if (_.isString(newlist)) {
-        if (newlist.slice(-1) === ",") {
-          newlist = newlist.slice(0, -1);
-        }
-        newlist = newlist.split(",");
-      }
+      newlist = Util.splitString(newlist);
 
       if(isSrcList) {
+        // source list -> just update the html
         this.srcList.html($("#tmpl_listitems").jqote({list: newlist, handles: false}));
       } else {
+        // destination list:
         // create html list items
         var listItems = $($("#tmpl_listitems").jqote({list: newlist, handles: true}));
 
@@ -588,9 +674,11 @@ $(function() {
         // update list
         this.dstList.empty().append(listItems).append(dropIndicator);
 
-        // re-enable inputs
-        this.disableInput(false);
       }
+
+      // re-enable inputs
+      this.disableInput(false);
+
       // call parent (log scroll update)
       this._super();
     }
@@ -791,12 +879,27 @@ $(function() {
 
       $("#bot-switcher, #bot-switcher-dd a").click(function(event) {
        if ($(event.currentTarget).is("a")) {
+        // get possible panel ids
         var botid = decodeURIComponent($(event.currentTarget).attr("data-botid"));
+        var panelid = decodeURIComponent($(event.currentTarget).attr("data-panelid"));
+
+        // hide all panels
         _.each(panels, function(panel) {
           panel.hide();
         });
-        panels[botid].show();
-        $("#selected-bot").html($(event.currentTarget).html());
+        $("#staticpanels .widgetcontainer").hide();
+
+        // show botpanel
+        if (botid !== "undefined") {
+          panels[botid].show();
+          $("#selected-bot").html($(event.currentTarget).html());
+        }
+
+        // show static panel
+        if (panelid !== "undefined") {
+          $("#staticpanels .widgetcontainer[data-panelid="+ panelid +"]").show();
+          $("#selected-bot").html($(event.currentTarget).html());
+        }
        }
 
         // hide/show
@@ -819,6 +922,8 @@ $(function() {
       "dropdown": Dropdown,
       "list_textfield": TextInputList,
       "list_list": ListInputList,
+      "slider": SliderInput,
+      "textarea": TextArea,
     },
   } ,{
     init: function(parent, connection) {
@@ -895,53 +1000,27 @@ $(function() {
 
               var displayName = inputSpecs["display_name"];
 
-              var initValue1;
-              var initValue2;
+              var initValue1, initValue2, initValue3, initValue4;
               switch(inputType) {
                 case "dropdown":
-                  var val = moduleconfig[propertyname + "_from"];
-                  var empty = val === "";
-
-                  if (val.slice(-1) === ",") {
-                    val = val.slice(0, -1);
-                  }
-
-                  initValue1 = empty ? [] : val.split(",");
+                  initValue1 = moduleconfig[propertyname + "_from"];
                   initValue2 = propertyvalue;
                   break;
-                case "list_textfield":
-                  var val = propertyvalue;
-                  var empty = val === "";
-
-                  if (val.slice(-1) === ",") {
-                    val1 = val.slice(0, -1);
-                  }
-
-                  initValue1 = empty ? [] : val.split(",");
-                  break;
                 case "list_list":
-                  var val1 = moduleconfig[propertyname + "_from"];
-                  var val2 = propertyvalue;
-
-                  var empty1 = val1 === "";
-                  var empty2 = val2 === "";
-
-                  if (val1.slice(-1) === ",") {
-                    val1 = val1.slice(0, -1);
-                  }
-
-                  if (val2.slice(-1) === ",") {
-                    val2 = val2.slice(0, -1);
-                  }
-
-                  initValue1 = empty1 ? [] : val1.split(",");
-                  initValue2 = empty2 ? [] : val2.split(",");
+                  initValue1 = moduleconfig[propertyname + "_from"];;
+                  initValue2 = propertyvalue;
                   break;
+                case "slider":
+                  var limits = inputSpecs.value_range.split(",");
+                  initValue1 = parseFloat(limits[0]);
+                  initValue2 = parseFloat(limits[1]);
+                  initValue3 = 0.1;
+                  initValue4 = parseFloat(moduleconfig[propertyname]);
                 default:
                   initValue1 = propertyvalue;
               }
 
-              var newInput = new InterfaceCreator.inputMap[inputType](displayName, _.bind(this.changeListener, this, botid, moduleName, propertyname), initValue1, initValue2);
+              var newInput = new InterfaceCreator.inputMap[inputType](displayName, _.bind(this.changeListener, this, botid, moduleName, propertyname), initValue1, initValue2, initValue3, initValue4);
               widgets[moduleName + "_" + propertyname] = newInput;
             }
           }, this);
@@ -967,8 +1046,6 @@ $(function() {
     },
 
     changeListener: function(botid, modulename, propertyname, value) {
-      // var update = _.bind(this.update, this);
-      // _.delay(update, 250, arg);
       this.connection.onInputChange(botid, modulename, propertyname, value);
     },
   });
@@ -1008,6 +1085,7 @@ $(function() {
         switch (msg.type) {
           case "packages":
             this.packages = msg.arguments.packages;
+            new CreateBotForm(this, this.packages);
             break;
           case "session":
             $.cookie("bs_session", msg.arguments.sid, parseInt(msg.arguments.expires) * 1000);
@@ -1075,6 +1153,23 @@ $(function() {
       });
       this.ws.send(msg);
       console.log(msg);
+    },
+
+    createNewBot: function(playername, password, botpackage, server, proxies) {
+      var request = {
+        'type': 'bot_management',
+        'arguments': {
+          'sid': $.cookie('bs_session'),
+          'type': 'create',
+          'username': playername,
+          'password': password,
+          'package': botpackage,
+          'server': server,
+          'proxies': proxies,
+        }
+      };
+
+      this.ws.send(JSON.stringify(request));
     },
   });
 });

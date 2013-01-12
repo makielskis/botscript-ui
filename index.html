@@ -401,11 +401,25 @@
       margin-left: -2px;
     }
 
-     .bs-game {
-       display: inline-block;
-       width: 10%;
-       text-transform:uppercase;
-     }
+   .bs-game {
+     display: inline-block;
+     width: 10%;
+     text-transform:uppercase;
+   }
+
+   textarea.btn {
+    background: white;
+    resize: none;
+   }
+
+   select {
+    background: none;
+    border: 1px solid #ddd;
+   }
+
+   .error {
+    border: 1px solid red;
+   }
   </style>
 </head>
 <body>
@@ -424,7 +438,38 @@
       <div class="span4" id="bot-switcher-dd">
       </div>
     </div>
-    <div id="app"></div>
+    <div id="app">
+      <div id="staticpanels">
+        <div class="widgetcontainer row-fluid" data-panelid="createbot" style="display: none">
+          <div class="span9">
+            <div class="row-fluid">
+              <div class="span2">Spielername</div>
+              <input name="playername" class="span4" type="text" />
+              <div class="span2">Passwort</div>
+              <input name="password" class="span4" type="password" />
+            </div>
+            <div class="row-fluid">
+              <div class="span2">Skript Paket</div>
+              <select name="package" class="span4"></select>
+              <div class="span2">Server</div>
+              <select name="server" class="span4"></select>
+            </div>
+            <div class="row-fluid">
+              <div class="span2">Proxies</div>
+              <textarea name="proxies" class="span10 btn" rows="10" placeholder="Proxyliste hier einfügen"></textarea>
+            </div>
+            <div class="row-fluid">
+              <button name="submit" type="button" class="offset9 btn span3">Bot anlegen</button>
+            </div>
+          </div>
+          <div class="span3">
+            <div class="row-fluid">
+              <span>Ein sehr nützlicher Text, der z.B. Informationen über Proxies und andere Einstellungen gibt.</span>
+            </div>
+          </span>
+        </div>
+      </div>
+    </div>
   </div>
   <script src="js/jquery-1.8.3.js"></script>
   <script src="js/jquery-ui-1.9.2.custom.min.js"></script>
@@ -461,6 +506,20 @@
         </div>
         <div class="span4 column3">
           <input type="text" class="span12" value="<%= this.value %>"/>
+          <div class="placeholder"></div>
+        </div>
+      </div>
+    ]]>
+  </script>
+
+  <script type="text/x-jqote-template" id="tmpl_textarea">
+   <![CDATA[
+      <div class="row-fluid">
+        <div class="span4 column1">
+          <span class="span12"><%= this.label %></span>
+        </div>
+        <div class="span8 column2">
+          <textarea rows="10" class="span12 btn"><%= this.value %></textarea>
           <div class="placeholder"></div>
         </div>
       </div>
@@ -617,6 +676,12 @@
           </a>
         </li>
       <% } %>
+      <li>
+      <a href="#" data-panelid="createbot">
+        <span class="bs-game"><i class="icon-plus"></i></span>
+        <span><b>Neuer Bot</b></span>
+      </a>
+    </li>
     <ul>
   ]]>
   </script>
@@ -647,10 +712,6 @@
 
   <script>
     $(function() {
-
-      var botdata = {"kv_sf_\"disabled":{"modules":{"boost":{"active":"0","maxmissinghealth":"5","maxmissingsatisfaction":"5","wastetolerance":"0"},"looting":{"active":"1","area":"M\\u00FCllraum","area_from":"M\\u00FCllraum,K\\u00FChlhaus,M\\u00FCllcontainer,Dusche f\\u00FCr harte Jungs,Giftm\\u00FCll-Entsorgung,Spirituosenlager,Block A,Farb-Lager,Dusche,Intensivstation,Lackiererei,Hof,Sportplatz,Block B,Waschraum,Lager,Wachraum,Krankenstation,Holzwerkstatt,Wartezimmer,Jungfrauendusche,Trockenraum,Gl\\u00FCcksspielecke,Kraftraum,Aufenthaltsraum der W\\u00E4rter,Werkstatt,Bibliothek,Kantine,B\\u00FCro des Direktors,K\\u00FCche,Speisesaal der W\\u00E4rter","auto_area":"0","caught_strategy":"bribe","caught_strategy_from":"bribe,soap,risk","gangtoll_strategy":"payToll","gangtoll_strategy_from":"payToll","timeslot":"0","timeslot_from":"0,1,2,3,4,5,6"},"mission":{"active":"1","mission_index":"2","missions":"","missions_from":"Hauptmission,Flirt-Kurs,Geld eintreiben,Müllräume säubern,Wäschetransport,Vom Gesellen zum Chefkoch,Lackierermeister,Aller Anfang ist schwer,Informationsaustausch,Sparringspartner,Erobere dir deinen Platz,Mach dir einen Namen,Heizkörper reparieren,Zelle einrichten,Nagerabschussrampe,Eiskalte Engel,Wer ist hier Psycho?,Was war los?,Burn, Direx, Burn!,In 80 Tagen aus dem Knast,Schallisolation,Der gute Samariter,Stadtguerilla-Trainingscamp,Wolke 7,Die wundersamen Wundersamen,Gib mir noch Zeit,Lenk den Wärter ab,Die Wundersalbe,Ärger machen,Ausbruchshelfer"},"train":{"active":"0","timeslot":"0","timeslot_from":"0,1,2,3,4,5,6","type":"mental","type_from":"mental,physical"}},"package":"packages/kv","proxy":"62.113.200.202:3128","server":"http://www.knastvoegel.de","username":"\"disabled","wait_time_factor":"1"},"pg_sy_oclife":{"modules":{"collect":{"active":"0"},"crime":{"active":"0","crime":"","crime_from":""},"fight":{"active":"0","auto":"0","blocklist":"","victims":""},"sell":{"active":"0","amount":"0","continuous":"0","price":"-1"},"study":{"active":"1","alcohol":"1","training_index":"1","trainings":"agi,","trainings_from":"att,def,agi,sprechen,bildungsstufe,musik,sozkontakte,konzentration,pickpocket"}},"package":"packages/pg","proxy":"91.228.53.28:3128","server":"http://sylt.pennergame.de","username":"oclife","wait_time_factor":"1"}};
-      var packages = {"packages":[{"name":"pg","servers":["http://berlin.pennergame.de","http://buenosaires.mendigogame.com","http://koeln.pennergame.de","http://krakow.menelgame.pl","http://marseille.clodogame.fr","http://muenchen.pennergame.de","http://reloaded.clodogame.fr","http://reloaded.mendigogame.es","http://reloaded.menelgame.pl","http://reloaded.pennergame.de","http://sampa.faveladogame.com","http://sylt.pennergame.de","http://www.bomzhuj.ru","http://www.bumrise.ae","http://www.bumrise.com","http://www.clodogame.fr","http://www.dossergame.co.uk","http://www.faveladogame.com","http://www.mendigogame.es","http://www.menelgame.pl","http://www.pennergame.de","http://www.serserionline.com"],"fight":{"module":"Kämpfen","victims":{"input_type":"list_textfield","display_name":"Gegner"},"auto":{"input_type":"checkbox","display_name":"Downfight Gegner"},"active":{"input_type":"toggle","display_name":"Kämpfen starten"}},"crime":{"module":"Verbrechen","crime":{"input_type":"dropdown","display_name":"Verbrechen"},"active":{"input_type":"toggle","display_name":"Verbrechen begehen"}},"study":{"module":"Weiterbildungen","trainings":{"input_type":"list_list","display_name":"Weiterbildungen"},"alcohol":{"input_type":"checkbox","display_name":"Betrinken"},"active":{"input_type":"toggle","display_name":"Weiterbildungen starten"}},"sell":{"module":"Flaschen verkaufen","active":{"input_type":"toggle","display_name":"Flaschen verkaufen"},"price":{"input_type":"textfield","display_name":"Verkaufspreis"},"amount":{"input_type":"textfield","display_name":"Verkaufsmenge"},"continuous":{"input_type":"checkbox","display_name":"Dauerverkaufsmodus"}},"collect":{"module":"Flaschen sammeln","active":{"input_type":"toggle","display_name":"Sammeln gehen"}}},{"name":"kv","servers":["http://www.knastvoegel.de"],"looting":{"module":"Plunder","timeslot":{"input_type":"dropdown","display_name":"Zeit"},"gangtoll_strategy":{"input_type":"dropdown","display_name":"Bandensteuer Strategie"},"active":{"input_type":"toggle","display_name":"Sammeln starten"},"auto_area":{"input_type":"checkbox","display_name":"Autom. Sammelgebiet"},"caught_strategy":{"input_type":"dropdown","display_name":"Gefasst Strategie"},"area":{"input_type":"dropdown","display_name":"Sammelgebiete"}},"boost":{"module":"Boost","maxmissinghealth":{"input_type":"textfield","display_name":"Max. fehlende Gesund."},"active":{"input_type":"toggle","display_name":"Boost starten"},"wastetolerance":{"input_type":"textfield","display_name":"Max. Verschwendung (%)"},"maxmissingsatisfaction":{"input_type":"textfield","display_name":"Max. fehlende Befr."}},"train":{"module":"Training","type":{"input_type":"dropdown","display_name":"Art"},"timeslot":{"input_type":"dropdown","display_name":"Dauer"},"active":{"input_type":"toggle","display_name":"Training starten"}},"mission":{"module":"Mission","missions":{"input_type":"list_list","display_name":"Missionen"},"active":{"input_type":"toggle","display_name":"Mission starten"}}}]};
-
       var creator = new InterfaceCreator($("#app"), new ServerConnection());
     });
   </script>
