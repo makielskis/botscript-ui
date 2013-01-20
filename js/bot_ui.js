@@ -1071,7 +1071,7 @@ $(function() {
             }
 
             // Add extra Log Widget
-            var logName = moduleName === "base" ? "Gessamt Log" : "Modul Log: " + moduleName;
+            var logName = moduleName === "base" ? "Gesamt Log" : "Modul Log: " + moduleName;
             widgets["modulelog"] = new Log(logName);
           }, this);
 
