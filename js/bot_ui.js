@@ -254,10 +254,21 @@ $(function() {
     },
 
     render: function() {
+      var logKey = false;
       _.each(this.widgets, function(widget, index) {
+        // omit log
+        if (index === "modulelog") {
+          logKey = index;
+          return;
+        }
         this.element.append(widget.element);
         widget.rendered();
       }, this);
+
+      // append log
+      if (logKey !== false) {
+        this.element.append(this.widgets[logKey].element);
+      }
     }
   });
 
@@ -301,15 +312,15 @@ $(function() {
 
   Widget("ToggleButton", {
     states: {
-      OFF: 0,
-      ON: 1,
-      WAIT: 2
+      OFF: "0",
+      ON: "1",
+      WAIT: "2"
     }
   }, {
     init: function(label, callback, state) {
       this._super(label, callback);
 
-      var newState = state !== undefined ? parseInt(state) : ToggleButton.states.WAIT;
+      var newState = _.isString(state) ? state : ToggleButton.states.WAIT;
       this.element = $($("#tmpl_togglebtn").jqote({label: this.label}));
       this.element.attr("id", this.id);
       this.button = this.element.find("button");
@@ -399,10 +410,15 @@ $(function() {
   });
 
   Widget("Checkbox", {
+    states: {
+      OFF: "0",
+      ON: "1",
+    }
+  }, {
     init: function(label, callback, initState) {
       this._super(label, callback);
 
-      var state = initState ? 1 : 0;
+      var state = _.isString(initState) ? initState : Checkbox.states.OFF;
       this.element = $($("#tmpl_checkbox").jqote({label: this.label, state: state}));
       this.element.attr("id", this.id);
       this.input = this.element.find("input");
@@ -416,11 +432,18 @@ $(function() {
     onEdit: function() {
       this.input.attr("disabled", true).hide();
       this.placeholder.show();
-      this.onChange(this.input.is(":checked"));
+      this.onChange(this.input.is(":checked") ? Checkbox.states.ON : Checkbox.states.OFF);
     },
 
     update: function(newState) {
-      this.input.attr('checked', newState ? true : false);
+      switch (newState) {
+        case Checkbox.states.OFF:
+          this.input.attr('checked', false);
+          break;
+        case Checkbox.states.ON:
+          this.input.attr('checked', true);
+          break;
+      }
       this.input.removeAttr("disabled").show();
       this.placeholder.hide();
 
@@ -732,10 +755,11 @@ $(function() {
 
     onSlideChange: function() {
       this.disableInput(true);
-      this.onChange(this.slider.slider("value"));
+      this.onChange(this.slider.slider("value").toString());
     },
 
     update: function(newValue) {
+      newValue = parseFloat(newValue);
       if (_.isNumber(newValue)) {
         this.slider.slider("value", newValue);
         this.sliderDisplay.html(newValue);
@@ -945,6 +969,18 @@ $(function() {
 
       var onUpdate = _.bind(function(botid, module, property, value) {
         console.log("got update", arguments);
+        if (module === "log") {
+         // get module name from log message
+         var moduleName = value.match(/(\[[^\]]*\]){3}\[([a-z]*)/)[2];
+
+         // get log widget for module
+         this.widgets[botid][moduleName]['modulelog'].update(value);
+
+         // overall log
+         this.widgets[botid]['base']['modulelog'].update(value);
+         return;
+        }
+
         var isFromProperty = false;
         if (property.slice(-5) === "_from") {
           property = property.slice(0, -5);
@@ -985,7 +1021,7 @@ $(function() {
       }, this);
 
       // show first panel
-      _(panels).values()[1].show();
+      _(panels).values()[0].show();
 
       this.panels = panels;
       BotSwitcher.recreate(panels);
@@ -1025,6 +1061,7 @@ $(function() {
                   initValue2 = parseFloat(limits[1]);
                   initValue3 = 0.1;
                   initValue4 = parseFloat(moduleconfig[propertyname]);
+                  break;
                 default:
                   initValue1 = propertyvalue;
               }
@@ -1032,6 +1069,10 @@ $(function() {
               var newInput = new InterfaceCreator.inputMap[inputType](displayName, _.bind(this.changeListener, this, botid, moduleName, propertyname), initValue1, initValue2, initValue3, initValue4);
               widgets[moduleName + "_" + propertyname] = newInput;
             }
+
+            // Add extra Log Widget
+            var logName = moduleName === "base" ? "Gessamt Log" : "Modul Log: " + moduleName;
+            widgets["modulelog"] = new Log(logName);
           }, this);
 
           var widgetcontainer = new WidgetContainer(widgets);
@@ -1093,6 +1134,7 @@ $(function() {
 
     // called when the socket is connected
     onopen: function(event) {
+      this.autoLogin();
     },
 
     // called when a message arrives
@@ -1100,8 +1142,12 @@ $(function() {
       var messageHandler = function messageHandler(msg) {
         switch (msg.type) {
           case "packages":
-            this.packages = msg.arguments.packages;
+            this.packages = msg.arguments;
             this.onPackages(this.packages);
+            if (_.isObject(this.bots)) {
+              this.onBotList(bots, this.packages);
+              delete this.bots;
+            }
             break;
           case "session":
             $.cookie("bs_session", msg.arguments.sid, parseInt(msg.arguments.expires) * 1000);
@@ -1110,6 +1156,8 @@ $(function() {
             var bots = msg.arguments;
             if (_.isObject(this.packages)) {
               this.onBotList(bots, this.packages);
+            } else {
+              this.bots = bots;
             }
             break;
           case "update":
@@ -1128,9 +1176,10 @@ $(function() {
       try {
         var msg = JSON.parse(event.data);
         if (_.has(msg, 'type') && _.has(msg, 'arguments')) {
+          console.log(" IN:", msg);
           _.bind(messageHandler, this, msg)();
         } else {
-          console.log("incomplete update");
+          console.log("incomplete update", msg);
         }
       } catch (exception) {
         throw exception;
@@ -1183,6 +1232,29 @@ $(function() {
           'package': botpackage,
           'server': server,
           'proxies': proxies,
+        }
+      };
+
+      this.ws.send(JSON.stringify(request));
+    },
+
+    login: function(username, password) {
+      var request = {
+        'type': 'login',
+        'arguments': {
+          'username': username,
+          'password': password,
+        }
+      };
+
+      this.ws.send(JSON.stringify(request));
+    },
+
+    autoLogin: function() {
+      var request = {
+        'type': 'login',
+        'arguments': {
+          'sid': $.cookie('bs_session'),
         }
       };
 

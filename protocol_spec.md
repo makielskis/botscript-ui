@@ -194,3 +194,13 @@ Sendet Map { $(identifier): $(configuration), ... }
         'success': [Boolean]
       }
     }
+
+**Beispiel**
+
+    {
+      'type': 'account',
+      'arguments': {
+        'key': "login",
+        'success': false
+      }
+    }
