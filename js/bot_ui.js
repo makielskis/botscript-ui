@@ -98,6 +98,46 @@ $(function() {
     },
   }),
 
+  $.Class('LoginForm', {
+    selector: "#staticpanels div[data-panelid='login']",
+
+    init: function(connection) {
+      this.form = $(this.selector);
+      this.connection = connection;
+
+      this.form.find("button[name=submit]").click(_.bind(this.submit, this));
+      this.form.find("input").keyup(_.bind(function(evt) {
+        if (evt.keyCode === 13) {
+          this.submit();
+        }
+      }, this));
+    },
+
+    submit: function() {
+      // get inputs
+      var usernameInput = this.form.find("input[name=username]").removeClass("error");
+      var passwordInput = this.form.find("input[name=password]").removeClass("error");
+
+      // get inputs values
+      var username = usernameInput.val();
+      var password = passwordInput.val();
+
+      // validate
+      var valid = true;
+      if (_(username).isEmpty()) {
+        usernameInput.addClass("error");
+        valid = false;
+      }
+      if (_(password).isEmpty()) {
+        passwordInput.addClass("error");
+        valid = false;
+      }
+
+      // send request
+      this.connection.login(username, password);
+    }
+  });
+
   $.Class('Accordion', {
     idPrefix: "accordion",
     idCounter: 0,
@@ -310,6 +350,25 @@ $(function() {
     },
   });
 
+  Widget("DeleteBotButton", {
+    init: function(label, callback) {
+      this._super(label, callback);
+
+      this.element = $($("#tmpl_deletebtn").jqote({label: this.label}));
+      this.element.attr("id", this.id);
+      this.button = this.element.find("button");
+
+      this.button.click(this.callback(this.onclick));
+    },
+
+    onclick: function() {
+      var confirmed = confirm("Soll der Bot wirklich gelöscht werden?");
+      if (confirmed) {
+        this.onChange("delete");
+      }
+    }
+  });
+
   Widget("ToggleButton", {
     states: {
       OFF: "0",
@@ -333,7 +392,7 @@ $(function() {
       var origState = this.toggleState;
       this.changeState(ToggleButton.states.WAIT);
 
-      if(origState === ToggleButton.states.OFF) {
+      if (origState === ToggleButton.states.OFF) {
         this.onChange(ToggleButton.states.ON);
       } else {
         this.onChange(ToggleButton.states.OFF);
@@ -938,6 +997,10 @@ $(function() {
           });
         });
       });
+
+      // show first panel
+      $("#bot-switcher").first().click();
+      $("#bot-switcher-dd a").first().click();
     }
   }, {});
 
@@ -957,10 +1020,15 @@ $(function() {
       this.parent = parent;
       this.connection = connection;
 
+      // setup login form
+      new LoginForm(this.connection);
+
+      // when packages come in setup new bot form
       var onPackages = _.bind(function(packages) {
           this.createbotForm = new CreateBotForm(this.connection, packages);
       }, this);
 
+      // when bots come in create interface
       var onBotList = _.bind(function(bots, packages) {
         this.botdata = bots;
         this.packagedata = packages;
@@ -970,15 +1038,27 @@ $(function() {
       var onUpdate = _.bind(function(botid, module, property, value) {
         console.log("got update", arguments);
         if (module === "log") {
-         // get module name from log message
-         var moduleName = value.match(/(\[[^\]]*\]){3}\[([a-z]*)/)[2];
+          // get module name from log message
+          var moduleName = value.match(/(\[[^\]]*\]){3}\[([a-z]*)/)[2];
 
-         // get log widget for module
-         this.widgets[botid][moduleName]['modulelog'].update(value);
+          // get log widget for module
+          if (_.isObject(this.widgets[botid])) {
+            if (_.isObject(this.widgets[botid][moduleName])) {
+              // regular log message -> log to module log
+              this.widgets[botid][moduleName]['modulelog'].update(value);
+            } else {
+              // no interface for that module -> log to base log
+            }
+            // log everything to base log, but don't log base messages twice
+            if (moduleName !== "base") {
+              this.widgets[botid]['base']['modulelog'].update(value);
+            }
+          } else {
+            // there is no interface for this log message -> it is being created right now
+            this.createbotForm.logWidget.update(value);
+          }
 
-         // overall log
-         this.widgets[botid]['base']['modulelog'].update(value);
-         return;
+          return;
         }
 
         var isFromProperty = false;
@@ -996,8 +1076,13 @@ $(function() {
         }
       }, this);
 
-      var onAccount = _.bind(function(action, succes) {
+      var onAccount = _.bind(function(action, success) {
         // display a coresponding message
+        if (action === "create_bot") {
+          if (_.isString(success)) {
+            this.createbotForm.logWidget.update("[ERROR] " + success);
+          }
+        }
       }, this);
 
       this.connection.setCallbacks(onPackages, onBotList, onUpdate, onEvent, onAccount);
@@ -1020,24 +1105,23 @@ $(function() {
         this.parent.append(panel);
       }, this);
 
-      // show first panel
-      _(panels).values()[0].show();
-
       this.panels = panels;
       BotSwitcher.recreate(panels);
     },
 
     makeControlPanel: function(botid) {
       var encBotId = encodeURIComponent(botid);
-      var botPackage = _.last(this.botdata[botid]['package'].split("/"));
+      var botPackage = this.botdata[botid]['package'];
 
       var interfaceMap = {};
       var wrapper = $("<div>").attr("id", encBotId);
 
       var containermap = {};
+      // each module
       _.each(this.botdata[botid]['modules'], function(moduleconfig, moduleName) {
           var widgets = {};
 
+          // each property
           _.each(moduleconfig, function(propertyvalue, propertyname) {
             var inputSpecs = this.getInputSpecs(botPackage, moduleName, propertyname);
             if (inputSpecs !== undefined) {
@@ -1071,8 +1155,13 @@ $(function() {
             }
 
             // Add extra Log Widget
-            var logName = moduleName === "base" ? "Gessamt Log" : "Modul Log: " + moduleName;
+            var logName = moduleName === "base" ? "Gesamt Log" : "Modul Log: " + moduleName;
             widgets["modulelog"] = new Log(logName);
+
+            // Add extra delete button
+            if (moduleName === "base") {
+              widgets["delete"] = new DeleteBotButton("Delete Bot", _.bind(this.deleteBotListener, this, botid));
+            }
           }, this);
 
           var widgetcontainer = new WidgetContainer(widgets);
@@ -1098,6 +1187,10 @@ $(function() {
     changeListener: function(botid, modulename, propertyname, value) {
       this.connection.onInputChange(botid, modulename, propertyname, value);
     },
+
+    deleteBotListener: function(botid) {
+      this.connection.deleteBot(botid);
+    }
   });
 
   $.Class("ServerConnection", {
@@ -1150,7 +1243,7 @@ $(function() {
             }
             break;
           case "session":
-            $.cookie("bs_session", msg.arguments.sid, parseInt(msg.arguments.expires) * 1000);
+            $.cookie("bs_session", msg.arguments.id, parseInt(msg.arguments.expire) * 1000);
             break;
           case "bots":
             var bots = msg.arguments;
@@ -1168,7 +1261,7 @@ $(function() {
             this.onEvent(msg.arguments.identifier, msg.arguments.key, msg.arguments.value);
             break;
           case "account":
-            this.onAccount(msg.argument.key, msg.arguments.success);
+            this.onAccount(msg.arguments.key, msg.arguments.success);
             break;
         }
       }
@@ -1242,7 +1335,7 @@ $(function() {
       var request = {
         'type': 'login',
         'arguments': {
-          'username': username,
+          'user': username,
           'password': password,
         }
       };
@@ -1251,15 +1344,31 @@ $(function() {
     },
 
     autoLogin: function() {
+      var sid = $.cookie('bs_session');
+      if (_.isString(sid)) {
+        var request = {
+          'type': 'login',
+          'arguments': {
+            'sid': sid,
+          }
+        };
+
+        this.ws.send(JSON.stringify(request));
+      }
+    },
+
+    deleteBot: function(botid) {
       var request = {
-        'type': 'login',
+        'type': 'bot_management',
         'arguments': {
           'sid': $.cookie('bs_session'),
+          'type': 'delete',
+          'identifier': botid
         }
       };
 
       this.ws.send(JSON.stringify(request));
-    },
+    }
   });
 });
 

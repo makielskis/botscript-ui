@@ -7,6 +7,8 @@
   <link href="css/font-awesome.css" rel="stylesheet">
   <link href="css/smoothness/jquery-ui-1.9.2.custom.css" rel="stylesheet">
   <link href="css/fonts.css" rel="stylesheet">
+
+  <link href='http://fonts.googleapis.com/css?family=Ubuntu+Mono' rel='stylesheet' type='text/css'>
   <style type="text/css">
     body {
       font-family: "Source Sans Pro";
@@ -178,8 +180,8 @@
     }
 
     .log {
-      font-family: monospace;
-      font-size: 10pt;
+      font-family: "Ubuntu Mono", monospace;
+      font-size: 9pt;
       color: #ddd;
       background-color: #000;
       height: 15em;
@@ -464,6 +466,22 @@
               <span>Ein sehr nützlicher Text, der z.B. Informationen über Proxies und andere Einstellungen gibt.</span>
           </div>
         </div>
+        <div class="widgetcontainer row-fluid" data-panelid="login" style="display: block">
+          <div class="span9">
+            <div class="row-fluid">
+              <div class="span2">Nutzername</div>
+              <input name="username" class="span4" type="text" />
+              <div class="span2">Passwort</div>
+              <input name="password" class="span4" type="password" />
+            </div>
+            <div class="row-fluid">
+              <button name="submit" type="button" class="offset9 btn span3">Anmelden</button>
+            </div>
+          </div>
+          <div class="span3">
+              <span>Ein sehr nützlicher Text, der z.B. Informationen über Proxies und andere Einstellungen gibt.</span>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -487,6 +505,21 @@
         </div>
         <div class="span4 column3">
           <button type="button" class="span12 btn"></button>
+        </div>
+      </div>
+    ]]>
+  </script>
+
+  <script type="text/x-jqote-template" id="tmpl_deletebtn">
+   <![CDATA[
+      <div class="row-fluid">
+        <div class="span4 column1">
+          <span class="span12"><%= this.label %></span>
+        </div>
+        <div class="span4 column2">
+        </div>
+        <div class="span4 column3">
+          <button type="button" class="span12 delete btn">Löschen</button>
         </div>
       </div>
     ]]>
@@ -661,13 +694,12 @@
       <% for (var bot in this.list) { %>
           <li>
           <% var encodedId = encodeURIComponent(bot); %>
+          <% var splitId = bot.split("_", 3); %>
           <a href="#" data-botid="<%= encodedId %>">
-            <% var package = bot.slice(0,2); %>
-            <span class="bs-game"><%= package %>:</span>
-            <span><b><%= bot.slice(6) %></b></span>
+            <span class="bs-game"><%= splitId[0] %>:</span>
+            <span><b><%= splitId[2] %></b></span>
             <span class="pull-right bs-server">
-              <% var serverTag = bot.slice(3,5); %>
-              <span><%= serverTag %></span>
+              <span><%= splitId[1] %></span>
             </span>
           </a>
         </li>
@@ -708,7 +740,7 @@
 
   <script>
     $(function() {
-      var creator = new InterfaceCreator($("#app"), new ServerConnection());
+      new InterfaceCreator($("#app"), new ServerConnection());
     });
   </script>
 </body>

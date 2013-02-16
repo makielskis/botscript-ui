@@ -191,7 +191,7 @@ Sendet Map { $(identifier): $(configuration), ... }
       'type': 'account',
       'arguments': {
         'key': [String],
-        'success': [Boolean]
+        'success': [Boolean] or [String]
       }
     }
 
@@ -202,5 +202,15 @@ Sendet Map { $(identifier): $(configuration), ... }
       'arguments': {
         'key': "login",
         'success': false
+      }
+    }
+
+**Beispiel**
+
+    {
+      'type': 'account',
+      'arguments': {
+        'key': "create_bot",
+        'success': "error message"
       }
     }
