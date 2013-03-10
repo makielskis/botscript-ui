@@ -245,6 +245,11 @@ $(function() {
               }
             });
           });
+
+          $('html, body').animate({
+	          scrollTop: ui.newPanel.offset().top
+          }, 1000);
+
         }, this)
       });
 
@@ -1220,7 +1225,7 @@ $(function() {
 
     // connect the socket
     connect: function() {
-      this.ws = new WebSocket('ws://localhost:8000');
+      this.ws = new WebSocket('ws://192.168.178.24:8000');
       this.ws.onopen = _.bind(this.onopen, this);
       this.ws.onmessage = _.bind(this.onmessage, this);
     },
