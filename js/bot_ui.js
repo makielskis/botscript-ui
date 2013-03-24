@@ -964,11 +964,13 @@ $(function() {
   });
 
   $.Class("BotSwitcher", {
+    initialized: false,
     recreate: function(panels) {
       var listItems = $("#tmpl_botswitcher_list").jqote({list: panels});
       $("#bot-switcher-dd").html(listItems);
 
-      $("#bot-switcher, #bot-switcher-dd a").click(function(event) {
+      var selector = BotSwitcher.initialized ? "#bot-switcher-dd a" : "#bot-switcher, #bot-switcher-dd a";
+      $(selector).click(function(event) {
        if ($(event.currentTarget).is("a")) {
         // get possible panel ids
         var botid = decodeURIComponent($(event.currentTarget).attr("data-botid"));
@@ -994,33 +996,36 @@ $(function() {
        }
 
         // hide/show
-        $("#bot-switcher-dd").toggle('fade', 50, function() {
-          $("#app").click(function() {
-            if ($("#bot-switcher-dd").is(":visible")) {
-              $("#bot-switcher-dd").hide('fade', 50);
-            }
-          });
+        $("#bot-switcher-dd").toggle('fade', 50);
+        $("#app").click(function() {
+          if ($("#bot-switcher-dd").is(":visible")) {
+            $("#bot-switcher-dd").hide('fade', 50);
+          }
         });
       });
 
       // show first panel
-      $("#bot-switcher").first().click();
       $("#bot-switcher-dd a").first().click();
+      $("#bot-switcher").first().click();
 
 
-      // Phone menu and logout
-      $("#phonemenu-btn").click(function() {
-        $("#phonemenu-dd").toggle();
-      });
+      if (!BotSwitcher.initialized) {
+        // Phone menu and logout
+        $("#phonemenu-btn").click(function() {
+          $("#phonemenu-dd").toggle();
+        });
 
-      $("#phonemenu-dd a").click(function() {
-        $("#phonemenu-dd").hide();
-      });
+        $("#phonemenu-dd a").click(function() {
+          $("#phonemenu-dd").hide();
+        });
 
-      $(".logoutbtn").click(function() {
-        $.cookie("bs_session", "");
-        location.reload();
-      });
+        $(".logoutbtn").click(function() {
+          $.cookie("bs_session", "");
+          location.reload();
+        });
+      }
+
+      BotSwitcher.initialized = true;
     }
   }, {});
 
@@ -1081,13 +1086,15 @@ $(function() {
           return;
         }
 
-        var isFromProperty = false;
-        if (property.slice(-5) === "_from") {
-          property = property.slice(0, -5);
-          isFromProperty = true;
+        // update coresponding widget if existing (might not exist if bot is newly created)
+        if (_.isObject(this.widgets[botid])) {
+          var isFromProperty = false;
+          if (property.slice(-5) === "_from") {
+            property = property.slice(0, -5);
+            isFromProperty = true;
+          }
+          this.widgets[botid][module][property].update(value, isFromProperty);
         }
-        this.widgets[botid][module][property].update(value, isFromProperty);
-        // update coresponding widget
       }, this);
 
       var onEvent = _.bind(function(botid, key, value) {
@@ -1240,7 +1247,7 @@ $(function() {
 
     // connect the socket
     connect: function() {
-      this.ws = new WebSocket('ws://192.168.178.26:9003');
+      this.ws = new WebSocket('ws://192.168.178.24:9003');
       this.ws.onopen = _.bind(this.onopen, this);
       this.ws.onmessage = _.bind(this.onmessage, this);
     },
