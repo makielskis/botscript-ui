@@ -461,3 +461,15 @@ select {
   }
 }
 
+.textinputlist-input {
+  float: left;
+  width: 80% !important;
+  min-height: 30px;
+  margin-bottom: 10px;
+}
+
+.textinputlist-btn {
+  float: left;
+  width: 20% !important;
+  min-height: 30px;
+}

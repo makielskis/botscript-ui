@@ -34,13 +34,13 @@
     </div>
     <div class="row-fluid">
       <div class="span4" id="phonemenu-dd">
-<ul class="unstyled">
-<li>
-<a class="logoutbtn" href="#">
-<i class="icon-signout"></i><span> Abmelden</span>
-</a>
-</li>
-<ul>
+        <ul class="unstyled">
+        <li>
+        <a class="logoutbtn" href="#">
+        <i class="icon-signout"></i><span> Abmelden</span>
+        </a>
+        </li>
+        <ul>
       </div>
     </div>
     <div id="app">
@@ -91,6 +91,8 @@
       </div>
     </div>
   </div>
+
+  <script src="https://raw.github.com/ziadloo/PhoneGap-Java-WebSocket/master/assets/www/js/websocket.js"></script>
   <script src="js/jquery-1.8.3.js"></script>
   <script src="js/jquery-ui-1.9.2.custom.min.js"></script>
   <script src="js/jquery.ui.touch-punch.js"></script>
@@ -195,12 +197,12 @@
         </div>
         <div class="span4 column2">
           <div class="input-append span12">
-            <input class="span9" type="text"/>
-            <button class="span3 btn" type="button"><i class="icon-plus"></i></button>
+            <input class="textinputlist-input" type="text"/>
+            <button class="textinputlist-btn btn" type="button"><i class="icon-plus"></i></button>
           </div>
         </div>
         <div class="span4 column3">
-          <ol type="text" class="span12 unstyled reorder-list"></ol>
+          <ol type="text" class="span12 unstyled reorder-list" style="clear: both"></ol>
           <div class="placeholder"></div>
         </div>
       </div>
@@ -344,19 +346,6 @@
   <script>
     $(function() {
       new InterfaceCreator($("#app"), new ServerConnection());
-    });
-
-    $("#phonemenu-btn").click(function() {
-      $("#phonemenu-dd").toggle();
-    });
-
-    $("#phonemenu-dd a").click(function() {
-      $("#phonemenu-dd").hide();
-    });
-
-    $(".logoutbtn").click(function() {
-      $.cookie("bs_session", "");
-      location.reload();
     });
   </script>
 </body>

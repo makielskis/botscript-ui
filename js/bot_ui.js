@@ -1006,6 +1006,21 @@ $(function() {
       // show first panel
       $("#bot-switcher").first().click();
       $("#bot-switcher-dd a").first().click();
+
+
+      // Phone menu and logout
+      $("#phonemenu-btn").click(function() {
+        $("#phonemenu-dd").toggle();
+      });
+
+      $("#phonemenu-dd a").click(function() {
+        $("#phonemenu-dd").hide();
+      });
+
+      $(".logoutbtn").click(function() {
+        $.cookie("bs_session", "");
+        location.reload();
+      });
     }
   }, {});
 
@@ -1225,7 +1240,7 @@ $(function() {
 
     // connect the socket
     connect: function() {
-      this.ws = new WebSocket('ws://192.168.178.24:8000');
+      this.ws = new WebSocket('ws://192.168.178.26:9003');
       this.ws.onopen = _.bind(this.onopen, this);
       this.ws.onmessage = _.bind(this.onmessage, this);
     },
@@ -1325,11 +1340,18 @@ $(function() {
         'arguments': {
           'sid': $.cookie('bs_session'),
           'type': 'create',
-          'username': playername,
-          'password': password,
-          'package': botpackage,
-          'server': server,
-          'proxies': proxies,
+          'config': JSON.stringify({
+            'username': playername,
+            'password': password,
+            'package': botpackage,
+            'server': server,
+            'modules': {
+              'base': {
+                'proxy': proxies,
+                'wait_time_factor': "1.00"
+              }
+            }
+          })
         }
       };
 
@@ -1350,16 +1372,14 @@ $(function() {
 
     autoLogin: function() {
       var sid = $.cookie('bs_session');
-      if (_.isString(sid)) {
-        var request = {
-          'type': 'login',
-          'arguments': {
-            'sid': sid,
-          }
-        };
+      var request = {
+        'type': 'login',
+        'arguments': {
+          'sid': _.isString(sid) ? sid : '',
+        }
+      };
 
-        this.ws.send(JSON.stringify(request));
-      }
+      this.ws.send(JSON.stringify(request));
     },
 
     deleteBot: function(botid) {
