@@ -1063,20 +1063,28 @@ $(function() {
       var onUpdate = _.bind(function(botid, module, property, value) {
         console.log("got update", arguments);
         if (module === "log") {
+          if (value === "") {
+            return;
+          }
+
           // get module name from log message
           var moduleName = value.match(/(\[[^\]]*\]){3}\[([a-z]*)/)[2];
+
+          // split log string
+          var splitRegex = /(\[[^\]]*\])(\[[^\]]*\])(\[[^\]]*\])(\[[^\]]*\])(.*)/;
+          var parts = value.match(splitRegex);
 
           // get log widget for module
           if (_.isObject(this.widgets[botid])) {
             if (_.isObject(this.widgets[botid][moduleName])) {
               // regular log message -> log to module log
-              this.widgets[botid][moduleName]['modulelog'].update(value);
+              this.widgets[botid][moduleName]['modulelog'].update(parts[1] + parts[2] + parts[5]);
             } else {
               // no interface for that module -> log to base log
             }
             // log everything to base log, but don't log base messages twice
             if (moduleName !== "base") {
-              this.widgets[botid]['base']['modulelog'].update(value);
+              this.widgets[botid]['base']['modulelog'].update(parts[1] + parts[2] + parts[4] + parts[5]);
             }
           } else {
             // there is no interface for this log message -> it is being created right now
@@ -1112,7 +1120,13 @@ $(function() {
         }
       }, this);
 
-      this.connection.setCallbacks(onPackages, onBotList, onUpdate, onEvent, onAccount);
+      var onLog = _.bind(function(botid, messages) {
+        _.each(messages.split("\n"), function(msg) {
+          this.connection.onUpdate(botid, 'log', undefined, msg);
+        }, this);
+      }, this);
+
+      this.connection.setCallbacks(onPackages, onBotList, onUpdate, onEvent, onAccount, onLog);
       this.connection.connect();
     },
 
@@ -1242,6 +1256,10 @@ $(function() {
     // called when server sends an 'account' message
     onAccount: function(action, success) {},
 
+    // will be set by InterfaceCreator
+    // called when server sends an 'log' message
+    onLog: function(botid, messages) {},
+
     // empty constructor
     init: function() {},
 
@@ -1290,6 +1308,9 @@ $(function() {
           case "account":
             this.onAccount(msg.arguments.key, msg.arguments.success);
             break;
+          case "log":
+            this.onLog(msg.arguments.identifier, msg.arguments.logs);
+            break;
         }
       }
 
@@ -1314,13 +1335,14 @@ $(function() {
       }
     },
 
-    setCallbacks: function(onPackages, onBotList, onUpdate, onEvent, onAccount) {
+    setCallbacks: function(onPackages, onBotList, onUpdate, onEvent, onAccount, onLog) {
       // TODO: check if args are all functions
       this.onPackages = onPackages;
       this.onBotList = onBotList;
       this.onUpdate = onUpdate;
       this.onEvent = onEvent;
       this.onAccount = onAccount;
+      this.onLog = onLog;
     },
 
     onInputChange: function(botid, modulename, propertyname, value) {
