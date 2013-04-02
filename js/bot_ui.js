@@ -41,19 +41,32 @@ $(function() {
     setupForm: function(packagedata) {
       // get inputs
       var botPackageInput = this.form.find("select[name=package]");
-      var serverInput = this.form.find("select[name=server]");
+      var serverInputContainer = this.form.find("#serverinput-container");
 
       // fill package select
       _(packagedata).each(function(botpackage) {
         var packageOption = $("<option>").text(botpackage['name']);
         packageOption.appendTo(botPackageInput);
 
-        // fill server select
+        // create and fill server select
+        var serverInput = $("<select>");
+        serverInput.attr("name", botpackage['name']);
+        serverInput.addClass("span4");
+        serverInput.addClass("hide");
         _(botpackage.servers).each(function(server) {
           var serverOption = $("<option>").text(server);
           serverOption.appendTo(serverInput);
         });
+        serverInput.appendTo(serverInputContainer);
       });
+
+      var onPackageChange = function(item) {
+        var selected = botPackageInput.find("option:selected").first().html();
+        serverInputContainer.find("select").hide().removeClass("active");
+        serverInputContainer.find("select[name=" + selected + "]").show().addClass("active");
+      }
+      botPackageInput.change(onPackageChange);
+      onPackageChange();
 
       this.form.find("button[name=submit]").click(_.bind(this.submit, this));
     },
@@ -63,7 +76,7 @@ $(function() {
       var playernameInput = this.form.find("input[name=playername]").removeClass("error");
       var passwordInput = this.form.find("input[name=password]").removeClass("error");
       var botPackageInput = this.form.find("select[name=package]").removeClass("error");
-      var serverInput = this.form.find("select[name=server]").removeClass("error");
+      var serverInput = this.form.find("#serverinput-container select.active").removeClass("error");
       var proxiesInput = this.form.find("textarea[name=proxies]").removeClass("error");
 
       // get input values
