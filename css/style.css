@@ -52,6 +52,7 @@ input, button {
   -o-animation:spin 1s infinite linear;
   -moz-animation:spin 1s infinite linear;
   -webkit-animation:spin 1s infinite linear;
+  -ms-animation:spin 1s infinite linear;
 }
 
 @-moz-keyframes spin {
