@@ -1144,6 +1144,9 @@ $(function() {
     },
 
     recreateInterface: function() {
+      // remove old panels
+      $('.bot-panel').remove();
+
       var panels = {};
       this.widgets = {}
 
@@ -1278,7 +1281,7 @@ $(function() {
 
     // connect the socket
     connect: function() {
-      this.ws = new WebSocket('ws://192.168.178.24:9003');
+      this.ws = new WebSocket('ws://127.0.0.1:9003');
       this.ws.onopen = _.bind(this.onopen, this);
       this.ws.onmessage = _.bind(this.onmessage, this);
     },
