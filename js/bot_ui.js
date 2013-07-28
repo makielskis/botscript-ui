@@ -1068,6 +1068,9 @@ $(function() {
 
       // when bots come in create interface
       var onBotList = _.bind(function(bots, packages) {
+		// Set a fake session ID as long as we don't have real session anyway 
+		// TODO remove if account supports arrives
+		$.cookie("bs_session", "fakesession");
         this.botdata = bots;
         this.packagedata = packages;
         this.recreateInterface();
