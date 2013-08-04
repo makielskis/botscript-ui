@@ -73,7 +73,56 @@
         </script>
       </div>
     </div>
+    <div class="row-fluid" id="message-area">
+
+    </div>
       <div id="staticpanels">
+        <div class="widgetcontainer row-fluid" data-panelid="account" style="display: none">
+          <div class="row-fluid">
+            <div class="span12">
+              <div class="row-fluid">
+                <h4 class="span12">E-Mail</h4>
+              </div>
+              <div class="row-fluid">
+                <span class="span3">Aktuelle E-Mail Adresse:</span><span class="span9" id="current-email">dummy@fake.org</span>
+              </div>
+              <div class="row-fluid">
+                <span class="span3">Neue E-Mail Adresse:</span><input type="text" class="span3" name="new-email"></span>
+                <span class="span3">Aktuelles Passwort:</span><input type="password" class="span3" name="confirm-pw-email"></span>
+              </div>
+              <div class="row-fluid">
+                <button type="button" class="span4 pull-right btn">E-Mail Adresse ändern</button>
+              </div>
+            </div>
+          </div>
+          <div class="row-fluid">
+            <div class="span12">
+              <div class="row-fluid">
+                <h4 class="span12">Passwort</h4>
+              </div>
+              <div class="row-fluid">
+                <span class="span3">Neues Passwort:</span><input type="text" class="span3"></span>
+                <span class="span3">Aktuelles Passwort:</span><input type="password" class="span3"></span>
+              </div>
+              <div class="row-fluid">
+                <button type="button" class="span4 pull-right btn">Passwort ändern</button>
+              </div>
+            </div>
+          <div class="row-fluid">
+            <div class="span12">
+              <div class="row-fluid">
+                <h4 class="span12">Account Löschen</h4>
+              </div>
+              <div class="row-fluid">
+                <span class="span3">Aktuelles Passwort:</span><input type="password" class="span3"></span>
+              </div>
+              <div class="row-fluid">
+                <button type="button" class="span4 pull-right btn">Account unwideruflich löschen</button>
+              </div>
+            </div>
+          </div>
+          </div>
+        </div>
         <div class="widgetcontainer row-fluid" data-panelid="createbot" style="display: none">
           <div class="row-fluid">
             <div class="span12">
@@ -101,7 +150,7 @@
               <div id="createbot_log" class="row-fluid"></div>
             </div>
           </div>
-          <div class="widgetcontainer row-fluid" data-panelid="login" style="display: block">
+          <div class="widgetcontainer row-fluid" data-panelid="login" style="display: none">
             <div class="span9">
               <div class="row-fluid">
                 <div class="span2"><span>Nutzername</span></div>
@@ -132,6 +181,28 @@
   <script src="js/underscore.js"></script>
   <script src="js/bot_ui.js"></script>
 
+  <script type="text/x-jqote-template" id="tmpl_successmessage">
+   <![CDATA[
+      <div class="row-fluid">
+        <div class="span12 message success">
+          <span><i class="icon-ok-sign"> </i><%= this.text %></span>
+          <span><i class="pull-right icon-remove"></i></span>
+        </div>
+      </div>
+    ]]>
+  </script>
+
+  <script type="text/x-jqote-template" id="tmpl_failuremessage">
+   <![CDATA[
+      <div class="row-fluid">
+        <div class="span12 message failure">
+          <span><i class="icon-exclamation-sign"> </i><%= this.text %></span>
+          <span><i class="pull-right icon-remove"></i></span>
+        </div>
+      </div>
+    ]]>
+  </script>
+
   <script type="text/x-jqote-template" id="tmpl_togglebtn">
    <![CDATA[
       <div class="row-fluid">
@@ -146,7 +217,7 @@
     ]]>
   </script>
 
-  <script type="text/x-jqote-template" id="tmpl_deletebtn">
+  <script type="text/x-jqote-template" id="tmpl_genericbtn">
    <![CDATA[
       <div class="row-fluid">
         <div class="span4 column1">
@@ -154,7 +225,7 @@
         </div>
         <div class="span4 column2 hidden-phone"></div>
         <div class="span4 column3">
-          <button type="button" class="span12 delete btn">Löschen</button>
+          <button type="button" class="span12 delete btn"><%= this.text %></button>
         </div>
       </div>
     ]]>

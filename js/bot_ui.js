@@ -151,6 +151,40 @@ $(function() {
     }
   });
 
+  $.Class('SuccessMessage', {
+    init: function(text) {
+      this.text = text;
+
+      var message = $($("#tmpl_successmessage").jqote({'text': text}));
+      message.hide();
+      message.find(".icon-remove").click(function(e) {
+        $(e.target).parents(".message").slideUp(function() {
+          $(e.target).parents(".message").remove();
+        });
+      });
+
+      message.appendTo("#message-area");
+      message.slideDown();
+    }
+  });
+
+  $.Class('FailureMessage', {
+    init: function(text) {
+      this.text = text;
+
+      var message = $($("#tmpl_failuremessage").jqote({'text': text}));
+      message.hide();
+      message.find(".icon-remove").click(function(e) {
+        $(e.target).parents(".message").slideUp(function() {
+          $(e.target).parents(".message").remove();
+        });
+      });
+
+      message.appendTo("#message-area");
+      message.slideDown();
+    }
+  });
+
   $.Class('Accordion', {
     idPrefix: "accordion",
     idCounter: 0,
@@ -372,7 +406,7 @@ $(function() {
     init: function(label, callback) {
       this._super(label, callback);
 
-      this.element = $($("#tmpl_deletebtn").jqote({label: this.label}));
+      this.element = $($("#tmpl_genericbtn").jqote({label: this.label, text: "Löschen"}));
       this.element.attr("id", this.id);
       this.button = this.element.find("button");
 
@@ -384,6 +418,23 @@ $(function() {
       if (confirmed) {
         this.onChange("delete");
       }
+    }
+  });
+
+  Widget("ReactivateButton", {
+    init: function(label, callback) {
+      this._super(label, callback);
+
+      this.element = $($("#tmpl_genericbtn").jqote({label: this.label, text: "Aktivieren"}));
+      this.element.attr("id", this.id);
+      this.button = this.element.find("button");
+
+      this.button.click(this.callback(this.onclick));
+    },
+
+    onclick: function() {
+      var proxies = prompt("Proxies für die Reaktivierung:");
+      this.onChange(proxies);
     }
   });
 
@@ -1142,7 +1193,55 @@ $(function() {
         }, this);
       }, this);
 
-      this.connection.setCallbacks(onPackages, onBotList, onUpdate, onEvent, onAccount, onLog);
+      var onSuccess = _.bind(function(type, id) {
+        switch(type[2]) {
+          case "delete":
+            new SuccessMessage("Account gelöscht.");
+            $(".bot-panel").remove();
+            $("#staticpanels div[data-panelid='login']").show();
+            break;
+          case "email":
+            new SuccessMessage("Email Adresse aktualisiert.");
+            break;
+          case "password":
+            new SuccessMessage("Passwort aktualisiert.");
+            break;
+        }
+      });
+
+      var onFailure = _.bind(function(type, id, error, reason) {
+        // TODO implement (handle all possible types/errors)
+        alert(reason);
+        switch(error) {
+          case 11: // Username already taken
+            new FailureMessage("Der Nutzername ist bereits belegt.");
+            break;
+          case 12: // Password to short
+            new FailureMessage("Das angegebene Passwort ist zu kurz.");
+            break;
+          case 13: // invalid email address
+            new FailureMessage("Die angegebene Email Adresse ist ungültig.");
+            break;
+          case 21: // user not found
+            new FailureMessage("Kein Nutzer mit diesem Namen gefunden.");
+            break;
+          case 31: // session id not available
+            break;
+          case 32: // session timed out
+            break;
+          case 41: // password wrong
+            new FailureMessage("Das angegebene Passwort ist falsch.");
+            break;
+          case 51: // bot already exists
+            new FailureMessage("Dieser Bot existiert bereits.");
+            break;
+          case 52: // bot not found
+            new FailureMessage("Dieser Bot existiert nicht.");
+            break;
+        }
+      });
+
+      this.connection.setCallbacks(onPackages, onBotList, onSuccess, onFailure, onUpdate, onEvent, onAccount, onLog);
       this.connection.connect();
     },
 
@@ -1178,7 +1277,12 @@ $(function() {
 
       var containermap = {};
       // each module
-      _.each(this.botdata[botid]['modules'], function(moduleconfig, moduleName) {
+      _.each(config, function(moduleconfig, moduleName) {
+          // Skip modules (except base) when inactive
+          if (this.botdata[botid].inactive === true && moduleName != "base") {
+            return;
+          }
+
           var widgets = {};
 
           // each property
@@ -1218,10 +1322,12 @@ $(function() {
             var logName = moduleName === "base" ? "Gesamt Log" : "Modul Log: " + moduleName;
             widgets["modulelog"] = new Log(logName);
 
-            // Add extra delete button
             if (moduleName === "base") {
-              widgets["delete"] = new DeleteBotButton("Delete Bot", _.bind(this.deleteBotListener, this, botid));
+              // Add extra delete button
+              widgets["delete"] = new DeleteBotButton("Bot löschen", _.bind(this.deleteBotListener, this, botid));
+              widgets["reactivate"] = new ReactivateButton("Bot aktivieren", _.bind(this.reactivateListener, this, botid);
             }
+
           }, this);
 
           var widgetcontainer = new WidgetContainer(widgets);
@@ -1251,6 +1357,10 @@ $(function() {
     deleteBotListener: function(botid) {
       this.connection.deleteBot(botid);
     }
+
+    reactivateListener: function(botid, proxies) {
+      this.connection.reactivateBot(botid, proxies);
+    }
   });
 
   $.Class("ServerConnection", {
@@ -1264,6 +1374,14 @@ $(function() {
     onBotList: function(bots, packages) {},
 
     // will be set by InterfaceCreator
+    // called when server sends an 'success' message
+    onSuccess: function(type, id) {},
+
+    // will be set by InterfaceCreator
+    // called when server sends an 'failure' message
+    onFailure: function(type, id, error, reason) {},
+
+    // will be set by InterfaceCreator
     // called when server sends an 'update' message
     onUpdate: function(botid, module, property, value) {},
 
@@ -1274,10 +1392,6 @@ $(function() {
     // will be set by InterfaceCreator
     // called when server sends an 'account' message
     onAccount: function(action, success) {},
-
-    // will be set by InterfaceCreator
-    // called when server sends an 'log' message
-    onLog: function(botid, messages) {},
 
     // empty constructor
     init: function() {},
@@ -1317,18 +1431,15 @@ $(function() {
               this.bots = bots;
             }
             break;
+          case "success":
+            this.onSuccess(msg.arguments.request, msg.arguments.request_id);
+            break;
+          case "failure":
+            this.onFailure(msg.arguments.request, msg.arguments.request_id, msg.arguments.error_code, msg.arguments.reason);
+            break;
           case "update":
             var splitKey = msg.arguments.key.split("_", 1);
             this.onUpdate(msg.arguments.identifier, splitKey[0], msg.arguments.key, msg.arguments.value);
-            break;
-          case "event":
-            this.onEvent(msg.arguments.identifier, msg.arguments.key, msg.arguments.value);
-            break;
-          case "account":
-            this.onAccount(msg.arguments.key, msg.arguments.success);
-            break;
-          case "log":
-            this.onLog(msg.arguments.identifier, msg.arguments.logs);
             break;
         }
       }
@@ -1354,21 +1465,21 @@ $(function() {
       }
     },
 
-    setCallbacks: function(onPackages, onBotList, onUpdate, onEvent, onAccount, onLog) {
-      // TODO: check if args are all functions
+    setCallbacks: function(onPackages, onBotList, onSuccess, onFailure, onUpdate, onEvent, onAccount) {
       this.onPackages = onPackages;
       this.onBotList = onBotList;
+      this.onSuccess = onSuccess;
+      this.onFailure = onFailure;
       this.onUpdate = onUpdate;
       this.onEvent = onEvent;
       this.onAccount = onAccount;
-      this.onLog = onLog;
     },
 
     onInputChange: function(botid, modulename, propertyname, value) {
       var command = modulename + "_set_" + propertyname;
       var value = _.isArray(value) ? value.join() : value;
       var msg = JSON.stringify({
-        'type': 'bot',
+        'type': ['user', 'bot', 'execute'],
         'arguments': {
           'sid': $.cookie("bs_session"),
           'identifier': botid,
@@ -1384,10 +1495,9 @@ $(function() {
 
     createNewBot: function(playername, password, botpackage, server, proxies) {
       var request = {
-        'type': 'bot_management',
+        'type': ['user', 'bot', 'create'],
         'arguments': {
           'sid': $.cookie('bs_session'),
-          'type': 'create',
           'config': JSON.stringify({
             'username': playername,
             'password': password,
@@ -1421,7 +1531,7 @@ $(function() {
     autoLogin: function() {
       var sid = $.cookie('bs_session');
       var request = {
-        'type': 'login',
+        'type': ['user'],
         'arguments': {
           'sid': _.isString(sid) ? sid : '',
         }
@@ -1432,13 +1542,25 @@ $(function() {
 
     deleteBot: function(botid) {
       var request = {
-        'type': 'bot_management',
+        'type': ['user', 'bot', 'delete'],
         'arguments': {
           'sid': $.cookie('bs_session'),
-          'type': 'delete',
           'identifier': botid
         }
-      };
+      },
+
+      this.ws.send(JSON.stringify(request));
+    },
+
+    reactivateBot: function(botid, proxies) {
+      var request = {
+        'type': ['user', 'bot', 'reactivate'],
+        'arguments': {
+          'sid': $.cookie('bs_session'),
+          'identifier': botid,
+          'proxy': proxies
+        }
+      },
 
       this.ws.send(JSON.stringify(request));
     }

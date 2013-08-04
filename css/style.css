@@ -33,6 +33,7 @@ input, button {
 #app-title > div {
   float: left;
   box-sizing: border-box;
+  -moz-box-sizing: border-box;
 }
 
 #invader {
@@ -473,4 +474,19 @@ select {
   float: left;
   width: 20% !important;
   min-height: 30px;
+}
+
+.message {
+  border-radius: 2px;
+  margin-bottom: 10px;
+  padding: 0 10px;
+  line-height: 30px;
+}
+
+.message.success {
+  background: lightgreen;
+}
+
+.message.failure {
+  background: lightcoral;
 }
