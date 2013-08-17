@@ -970,7 +970,11 @@ $(function() {
         this.redraw();
       }, this);
 
-      switch (this.slider.slider("value")) {
+      var loglevel = 1;
+      if (this.slider.hasClass("ui-slider")) {
+        loglevel = this.slider.slider("value");
+      }
+      switch (loglevel) {
         case 0:
           this.slider.removeClass("info").removeClass("debug").addClass("error");
           this.logArea.children(".info, .debug").hide();
