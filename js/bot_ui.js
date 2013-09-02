@@ -151,6 +151,128 @@ $(function() {
     }
   });
 
+  $.Class('CreateAccountForm', {
+    selector: "#staticpanels div[data-panelid='createaccount']",
+
+    init: function(connection) {
+      this.form = $(this.selector);
+      this.connection = connection;
+
+      this.form.find("button[name=createaccount]").click(_.bind(this.submit, this));
+      this.form.find("input").keyup(_.bind(function(evt) {
+        if (evt.keyCode === 13) {
+          this.submit();
+        }
+      }, this));
+    },
+
+    submit: function() {
+      // get inputs
+      var usernameInput = this.form.find("input[name=username]").removeClass("error");
+      var emailInput = this.form.find("input[name=email]").removeClass("error");
+      var passwordInput = this.form.find("input[name=password]").removeClass("error");
+      var passwordconfirmInput = this.form.find("input[name=passwordconfirm]").removeClass("error");
+
+      // get inputs values
+      var username = usernameInput.val();
+      var email = emailInput.val();
+      var password = passwordInput.val();
+      var password_confirm = passwordconfirmInput.val();
+
+      // validate
+      var invalid_fields = [];
+      if (_(username).isEmpty()) {
+        usernameInput.addClass("error");
+        invalid_fields.push("username");
+      }
+      if (!email.match(/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i)) {
+        emailInput.addClass("error");
+        invalid_fields.push("email");
+      }
+      if (_(password).isEmpty() || password != password_confirm) {
+        passwordInput.addClass("error");
+        passwordconfirmInput.addClass("error");
+        invalid_fields.push("password");
+      }
+
+      if (invalid_fields.length > 0) {
+        _(invalid_fields).each(function(item) {
+          switch (item) {
+            case "username":
+              new FailureMessage("Ein Nutzername muss angegeben werden.");
+              break;
+            case "email":
+              new FailureMessage("Die angegebene E-Mail Adresse ist ungültig.");
+              break;
+            case "password":
+              new FailureMessage("Die angebenen Passwörter müssen übereinstimmen");
+              break;
+          }
+        });
+      } else {
+        // send request
+        this.connection.createAccount(username, email, password);
+      }
+    }
+  });
+
+  $.Class('AccountSettingsForm', {
+    selector: "#staticpanels div[data-panelid='account']",
+
+    init: function(connection) {
+      this.parent = $(this.selector);
+      this.connection = connection;
+
+      this.forms = {};
+      forms["email"] = this.parent.find();
+      forms["password"] = this.parent.find();
+      forms["delete"] = this.parent.find();
+
+      this.form.email.find("button[name='update-email']").click(this.callback(this.submitEmail));
+      this.form.password.find("button[name='update-password']").click(this.callback(this.submitPassword));
+      this.form.deleteAccount.find("button[name='delete-account']").click(this.callback(this.submitDelete));
+    },
+
+    submitEmail: function() {
+      var email = this.email.find("input[name='new-email']").val();
+      var password = this.email.find("input[name='confirm-pw-email']").val();
+
+      if (_(email).isEmpty() || _(password).isEmpty()) {
+        new FailureMessage("Alle Felder müssen ausgefüllt werden.");
+        return;
+      }
+
+      this.connection.updateEmail(password, email);
+    },
+
+    submitPassword: function() {
+      var new_pw = this.password.find("input[name='new-pw']").val();
+      var cur_pw = this.password.find("input[name='confirm-pw-pw']").val();
+
+      if (_(new_pw).isEmpty() || _(cur_pw).isEmpty()) {
+        new FailureMessage("Alle Felder müssen ausgefüllt werden.");
+        return;
+      }
+
+      this.connection.updatePassword(cur_pw, new_pw);
+    },
+
+    submitDelete: function() {
+      var pw = this.deleteAccount.find("input[name='confirm-pw-delete']").val();
+
+      if (_(pw).isEmpty()) {
+        new FailureMessage("Alle Felder müssen ausgefüllt werden.");
+        return;
+      }
+
+      this.connection.deleteAccount(password);
+    },
+
+    displayNewEmail: function(email) {
+      this.form.email.find("#current-email").html(email);
+    }
+  });
+
   $.Class('SuccessMessage', {
     init: function(text) {
       this.text = text;
@@ -182,6 +304,56 @@ $(function() {
 
       message.appendTo("#message-area");
       message.slideDown();
+    }
+  });
+
+  $.Class("ComboButton", {
+    init: function(connection) {
+      this.connection = connection;
+      this.element = $("#combobtn");
+      this.role = "";
+
+      this.element.click(this.callback(this.onclick));
+    },
+
+    setLogout: function() {
+      this.element.html(this.makeHtml("Logout", "signout"));
+      this.role = "logout";
+    },
+
+    setRegister: function() {
+      this.element.html(this.makeHtml("Registrieren", "user"));
+      this.role = "register";
+    },
+
+    setLogin: function() {
+      this.element.html(this.makeHtml("Login", "signin"));
+      this.role = "login";
+    },
+
+    makeHtml: function(text, icon) {
+      return '<i class="icon-' + icon + '"></i><span> ' + text + '</span>';
+    },
+
+    onclick: function() {
+      switch (this.role) {
+        case "logout":
+          // TODO use logout function for connection when available
+          //connection.logout();
+          //this.setRegister();
+          $.cookie("bs_session", "");
+          location.reload();
+          break;
+        case "register":
+          $("#staticpanels .widgetcontainer").hide();
+          $("#staticpanels div[data-panelid='createaccount']").show();
+          this.setLogin();
+          break;
+        case "login":
+          $("#staticpanels .widgetcontainer").hide();
+          $("#staticpanels div[data-panelid='login']").show();
+          this.setRegister();
+      }
     }
   });
 
@@ -1086,11 +1258,6 @@ $(function() {
         $("#phonemenu-dd a").click(function() {
           $("#phonemenu-dd").hide();
         });
-
-        $(".logoutbtn").click(function() {
-          $.cookie("bs_session", "");
-          location.reload();
-        });
       }
 
       BotSwitcher.initialized = true;
@@ -1113,19 +1280,23 @@ $(function() {
       this.parent = parent;
       this.connection = connection;
 
-      // setup login form
+      // setup forms
       new LoginForm(this.connection);
+      new CreateAccountForm(this.connection);
+      this.combobtn = new ComboButton();
+      this.combobtn.setRegister();
 
       // when packages come in setup new bot form
       var onPackages = _.bind(function(packages) {
-          this.createbotForm = new CreateBotForm(this.connection, packages);
+        this.createbotForm = new CreateBotForm(this.connection, packages);
+        this.combobtn.setLogout();
       }, this);
 
       // when bots come in create interface
       var onBotList = _.bind(function(bots, packages) {
 		// Set a fake session ID as long as we don't have real session anyway 
 		// TODO remove if account supports arrives
-		$.cookie("bs_session", "fakesession");
+		//$.cookie("bs_session", "fakesession");
         this.botdata = bots;
         this.packagedata = packages;
         this.recreateInterface();
@@ -1138,30 +1309,35 @@ $(function() {
             return;
           }
 
-          // get module name from log message
-          var moduleName = value.match(/(\[[^\]]*\]){3}\[([a-z]*)/)[2];
+          _.each(value.split("\n"), function(message) {
+            if (message === "") {
+              return;
+            }
 
-          // split log string
-          var splitRegex = /(\[[^\]]*\])(\[[^\]]*\])(\[[^\]]*\])(\[[^\]]*\])(.*)/;
-          var parts = value.match(splitRegex);
+            // get module name from log message
+            var moduleName = message.match(/(\[[^\]]*\]){3}\[([a-z]*)/)[2];
 
-          // get log widget for module
-          if (_.isObject(this.widgets[botid])) {
-            if (_.isObject(this.widgets[botid][moduleName])) {
-              // regular log message -> log to module log
-              this.widgets[botid][moduleName]['modulelog'].update(parts[1] + parts[2] + parts[5]);
+            // split log string
+            var splitRegex = /(\[[^\]]*\])(\[[^\]]*\])(\[[^\]]*\])(\[[^\]]*\])(.*)/;
+            var parts = message.match(splitRegex);
+
+            // get log widget for module
+            if (_.isObject(this.widgets[botid])) {
+              if (_.isObject(this.widgets[botid][moduleName])) {
+                // regular log message -> log to module log
+                this.widgets[botid][moduleName]['modulelog'].update(parts[1] + parts[2] + parts[5]);
+              } else {
+                // no interface for that module -> log to base log
+              }
+              // log everything to base log, but don't log base messages twice
+              if (moduleName !== "base") {
+                this.widgets[botid]['base']['modulelog'].update(parts[1] + parts[2] + parts[4] + parts[5]);
+              }
             } else {
-              // no interface for that module -> log to base log
+              // there is no interface for this log message -> it is being created right now
+              this.createbotForm.logWidget.update(message);
             }
-            // log everything to base log, but don't log base messages twice
-            if (moduleName !== "base") {
-              this.widgets[botid]['base']['modulelog'].update(parts[1] + parts[2] + parts[4] + parts[5]);
-            }
-          } else {
-            // there is no interface for this log message -> it is being created right now
-            this.createbotForm.logWidget.update(value);
-          }
-
+          }, this);
           return;
         }
 
@@ -1281,7 +1457,7 @@ $(function() {
 
       var containermap = {};
       // each module
-      _.each(config, function(moduleconfig, moduleName) {
+      _.each(this.botdata[botid]['modules'], function(moduleconfig, moduleName) {
           // Skip modules (except base) when inactive
           if (this.botdata[botid].inactive === true && moduleName != "base") {
             return;
@@ -1329,7 +1505,7 @@ $(function() {
             if (moduleName === "base") {
               // Add extra delete button
               widgets["delete"] = new DeleteBotButton("Bot löschen", _.bind(this.deleteBotListener, this, botid));
-              widgets["reactivate"] = new ReactivateButton("Bot aktivieren", _.bind(this.reactivateListener, this, botid);
+              widgets["reactivate"] = new ReactivateButton("Bot aktivieren", _.bind(this.reactivateListener, this, botid));
             }
 
           }, this);
@@ -1360,7 +1536,7 @@ $(function() {
 
     deleteBotListener: function(botid) {
       this.connection.deleteBot(botid);
-    }
+    },
 
     reactivateListener: function(botid, proxies) {
       this.connection.reactivateBot(botid, proxies);
@@ -1425,7 +1601,7 @@ $(function() {
             }
             break;
           case "session":
-            $.cookie("bs_session", msg.arguments.id, parseInt(msg.arguments.expire) * 1000);
+            $.cookie("bs_session", msg.arguments.sid);
             break;
           case "bots":
             var bots = msg.arguments;
@@ -1522,9 +1698,9 @@ $(function() {
 
     login: function(username, password) {
       var request = {
-        'type': 'login',
+        'type': ['login'],
         'arguments': {
-          'user': username,
+          'username': username,
           'password': password,
         }
       };
@@ -1551,7 +1727,7 @@ $(function() {
           'sid': $.cookie('bs_session'),
           'identifier': botid
         }
-      },
+      };
 
       this.ws.send(JSON.stringify(request));
     },
@@ -1564,10 +1740,61 @@ $(function() {
           'identifier': botid,
           'proxy': proxies
         }
-      },
+      };
 
       this.ws.send(JSON.stringify(request));
-    }
+    },
+
+    createAccount: function(username, email, password) {
+      var request = {
+        'type': ['register'],
+        'arguments': {
+          'username': username,
+          'password': password,
+          'email': email
+        }
+      };
+
+      this.ws.send(JSON.stringify(request));
+    },
+
+    deleteAccount: function(password) {
+      var request = {
+        'type': ['user', 'update', 'delete'],
+        'arguments': {
+          'sid': $.cookie('bs_session'),
+          'password': password
+        }
+      };
+
+      this.ws.send(JSON.stringify(request));
+    },
+
+    updateEmail: function(password, email) {
+      var request = {
+        'type': ['user', 'update', 'email'],
+        'arguments': {
+          'sid': $.cookie('bs_session'),
+          'current_pw': password,
+          'new_email': email
+        }
+      };
+
+      this.ws.send(JSON.stringify(request));
+    },
+
+    updatePassword: function(current_pw, new_pw) {
+      var request = {
+        'type': ['user', 'update', 'password'],
+        'arguments': {
+          'sid': $.cookie('bs_session'),
+          'current_pw': current_pw,
+          'new_pw': new_pw
+        }
+      };
+
+      this.ws.send(JSON.stringify(request));
+    },
   });
 });
 

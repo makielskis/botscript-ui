@@ -312,7 +312,7 @@ input {
 }
 
 
-#logoutbtn {
+.logoutbtn {
   padding: 5px;
   color: #333;
   text-align: right;
