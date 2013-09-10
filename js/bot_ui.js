@@ -929,21 +929,6 @@ $(function() {
       });
       this.dstList.disableSelection();
 
-      // source dragable initialisation
-      this.srcList.children("li").each(_.bind(function(index, item) {
-        $(item).draggable({
-          helper: function(e) {
-            var original = $(this);
-            var width = original.width();
-
-            var clone = original.clone().width(width);
-            return clone[0];
-          },
-          connectToSortable: "#" + this.id + " div.column3 ol",
-        });
-        $(item).disableSelection();
-      }, this));
-
       // register listeners
       this.dstList.on("sortupdate", this.callback(this.onDstListChange));
     },
@@ -974,9 +959,24 @@ $(function() {
     update: function(newlist, isSrcList) {
       newlist = Util.splitString(newlist);
 
-      if(isSrcList) {
+      if (isSrcList) {
         // source list -> just update the html
         this.srcList.html($("#tmpl_listitems").jqote({list: newlist, handles: false}));
+
+        // source dragable initialisation
+        this.srcList.children("li").each(_.bind(function(index, item) {
+          $(item).draggable({
+            helper: function(e) {
+              var original = $(this);
+              var width = original.width();
+
+              var clone = original.clone().width(width);
+              return clone[0];
+            },
+            connectToSortable: "#" + this.id + " div.column3 ol",
+          });
+          $(item).disableSelection();
+        }, this));
       } else {
         // destination list:
         // create html list items
@@ -999,7 +999,6 @@ $(function() {
 
         // update list
         this.dstList.empty().append(listItems).append(dropIndicator);
-
       }
 
       // re-enable inputs
