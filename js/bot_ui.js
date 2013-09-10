@@ -1200,6 +1200,11 @@ $(function() {
     showScrollbar: function() {
       this.logArea.getNiceScroll().show();
     },
+
+    clear: function() {
+      this.logArea.html("");
+      this.logArea.redraw();
+    }
   });
 
   $.Class("BotSwitcher", {
@@ -1296,6 +1301,7 @@ $(function() {
         this.botdata = bots;
         this.packagedata = packages;
         this.recreateInterface();
+        this.createbotForm.logWidget.clear();
       }, this);
 
       var onUpdate = _.bind(function(botid, module, property, value) {
