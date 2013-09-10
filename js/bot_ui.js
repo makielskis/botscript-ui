@@ -1293,9 +1293,6 @@ $(function() {
 
       // when bots come in create interface
       var onBotList = _.bind(function(bots, packages) {
-		// Set a fake session ID as long as we don't have real session anyway 
-		// TODO remove if account supports arrives
-		//$.cookie("bs_session", "fakesession");
         this.botdata = bots;
         this.packagedata = packages;
         this.recreateInterface();
@@ -1390,7 +1387,6 @@ $(function() {
 
       var onFailure = _.bind(function(type, id, error, reason) {
         // TODO implement (handle all possible types/errors)
-        alert(reason);
         switch(error) {
           case 11: // Username already taken
             new FailureMessage("Der Nutzername ist bereits belegt.");
@@ -1709,14 +1705,16 @@ $(function() {
 
     autoLogin: function() {
       var sid = $.cookie('bs_session');
-      var request = {
-        'type': ['user'],
-        'arguments': {
-          'sid': _.isString(sid) ? sid : '',
-        }
-      };
+      if (_.isString(sid) && sid !== "") {
+        var request = {
+          'type': ['user'],
+          'arguments': {
+            'sid': sid,
+          }
+        };
 
-      this.ws.send(JSON.stringify(request));
+        this.ws.send(JSON.stringify(request));
+      }
     },
 
     deleteBot: function(botid) {
