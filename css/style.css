@@ -326,7 +326,7 @@ input {
   width: 20px;
 }
 
-#bot-switcher, #phonemenu-btn {
+#bot-switcher, #phonemenu-btn, .logoutbtn {
   padding: 5px;
   cursor: pointer;
   -moz-user-select: none;
