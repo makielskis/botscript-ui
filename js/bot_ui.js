@@ -1013,30 +1013,19 @@ $(function() {
     init: function(label, callback, minValue, maxValue, step, value) {
       this._super(label, callback);
 
-      this.element = $($("#tmpl_sliderinput").jqote({label: this.label}));
+      this.element = $($("#tmpl_sliderinput").jqote({'label': this.label,
+                                                     'min': minValue || 0,
+                                                     'max': maxValue || 1,
+                                                     'step': step || 0.1,
+                                                     'value': value || 1}));
       this.slider = this.element.find(".slider-input");
       this.placeholders = this.element.find("div.placeholder");
       this.sliderDisplay = this.element.find(".slider-display");
 
-      var options = {};
-      if (_.isNumber(maxValue)) {
-        options.max = maxValue;
-      }
-      if (_.isNumber(minValue)) {
-        options.min = minValue;
-      }
-      if (_.isNumber(step)) {
-        options.step = step;
-      }
-      if (_.isNumber(value)) {
-        options.value = value;
-      }
+      this.update(this.slider.val());
 
-      this.slider.slider(options);
-      this.update(this.slider.slider("value"));
-
-      this.slider.on("slidestop", this.callback(this.onSlideChange));
-      this.slider.on("slide", this.callback(this.onSlide));
+      this.slider.mouseup(this.callback(this.onSlideChange));
+      this.slider.change(this.callback(this.onSlide));
 
       this.element.attr("id", this.id);
     },
@@ -1049,18 +1038,18 @@ $(function() {
     },
 
     onSlide: function() {
-      this.sliderDisplay.text(this.slider.slider("value"));
+      this.sliderDisplay.text(this.slider.val());
     },
 
     onSlideChange: function() {
       this.disableInput(true);
-      this.onChange(this.slider.slider("value").toString());
+      this.onChange(this.slider.val().toString());
     },
 
     update: function(newValue) {
       newValue = parseFloat(newValue);
       if (_.isNumber(newValue)) {
-        this.slider.slider("value", newValue);
+        this.slider.val(newValue);
         this.sliderDisplay.html(newValue);
       }
       this.disableInput(false);
