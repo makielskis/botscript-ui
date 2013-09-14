@@ -46,6 +46,7 @@ input, button {
 }
 
 .placeholder {
+  margin: 0px auto;
   border:.25em solid rgba(0,0,0,0.9);
   opacity:.9;
   border-top:.25em solid rgba(0,0,0,0);
