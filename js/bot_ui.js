@@ -1081,7 +1081,6 @@ $(function() {
       this.element = $($("#tmpl_log").jqote({label: this.label}));
       this.logArea = this.element.find(".log");
       this.header = this.element.find(".collapsible-header");
-      this.slider = this.header.find(".slider-input");
 
       this.element.attr("id", this.id);
 
@@ -1095,13 +1094,6 @@ $(function() {
         cursorcolor: 'white',
         autohidemode: false
       });
-
-      this.slider.slider({
-        min: 0,
-        max: 2,
-      });
-      this.slider.slider("value", 1);
-      this.slider.on("slidestop", _.bind(this.filterMessages, this));
 
       if (_.isArray(initMessages)) {
         _.each(initMessages, this.addMessage, this);
@@ -1136,32 +1128,6 @@ $(function() {
       }
     },
 
-    filterMessages: function() {
-      var redrawFunc = _.bind(function() {
-        this.redraw();
-      }, this);
-
-      var loglevel = 1;
-      if (this.slider.hasClass("ui-slider")) {
-        loglevel = this.slider.slider("value");
-      }
-      switch (loglevel) {
-        case 0:
-          this.slider.removeClass("info").removeClass("debug").addClass("error");
-          this.logArea.children(".info, .debug").hide();
-          this.logArea.children(".error").show();
-          break;
-        case 1:
-          this.slider.removeClass("error").removeClass("debug").addClass("info");
-          this.logArea.children(".debug").hide();
-          this.logArea.children(".error, .info").show();
-          break;
-        case 2:
-          this.slider.removeClass("info").removeClass("error").addClass("debug");
-          this.logArea.children(".error, .info, .debug").show();
-      }
-    },
-
     addMessage: function(msg) {
       var msgContainer = $("<div></div>").html(msg);
 
@@ -1174,7 +1140,6 @@ $(function() {
       }
 
       this.logArea.append(msgContainer);
-      this.filterMessages();
       this.logArea.scrollTop(this.logArea[0].scrollHeight);
     },
 
@@ -1190,7 +1155,6 @@ $(function() {
 
     rendered: function() {
       this.logArea.scrollTop(this.logArea[0].scrollHeight);
-      this.filterMessages();
     },
 
     hideScrollbar: function() {
@@ -1203,7 +1167,7 @@ $(function() {
 
     clear: function() {
       this.logArea.html("");
-      this.logArea.redraw();
+      this.redraw();
     }
   });
 
@@ -1418,6 +1382,12 @@ $(function() {
             break;
           case 52: // bot not found
             new FailureMessage("Dieser Bot existiert nicht.");
+            break;
+          case 53: // invalid configuration
+            new FailureMessage("Die abgesendete Konfiguation ist ungültig.");
+            break;
+          case 54: // bot creation failed
+            new FailureMessage("Der Bot konnte nicht erstellt werden.");
             break;
         }
       });
