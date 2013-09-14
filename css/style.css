@@ -437,10 +437,6 @@ select {
   border: 1px solid #ddd;
 }
 
-#app span {
-  vertical-align: sub;
-}
-
 @media (min-width: 768px) {
   body {
     background: #eee;
