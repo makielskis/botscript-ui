@@ -199,13 +199,13 @@ $(function() {
         _(invalid_fields).each(function(item) {
           switch (item) {
             case "username":
-              new FailureMessage("Ein Nutzername muss angegeben werden.");
+              new InfoMessage("Ein Nutzername muss angegeben werden.", InfoMessage.TYPES.ERROR);
               break;
             case "email":
-              new FailureMessage("Die angegebene E-Mail Adresse ist ungültig.");
+              new InfoMessage("Die angegebene E-Mail Adresse ist ungültig.", InfoMessage.TYPES.ERROR);
               break;
             case "password":
-              new FailureMessage("Die angebenen Passwörter müssen übereinstimmen");
+              new InfoMessage("Die angebenen Passwörter müssen übereinstimmen", InfoMessage.TYPES.ERROR);
               break;
           }
         });
@@ -238,7 +238,7 @@ $(function() {
       var password = this.email.find("input[name='confirm-pw-email']").val();
 
       if (_(email).isEmpty() || _(password).isEmpty()) {
-        new FailureMessage("Alle Felder müssen ausgefüllt werden.");
+        new InfoMessage("Alle Felder müssen ausgefüllt werden.", InfoMessage.TYPES.ERROR);
         return;
       }
 
@@ -250,7 +250,7 @@ $(function() {
       var cur_pw = this.password.find("input[name='confirm-pw-pw']").val();
 
       if (_(new_pw).isEmpty() || _(cur_pw).isEmpty()) {
-        new FailureMessage("Alle Felder müssen ausgefüllt werden.");
+        new InfoMessage("Alle Felder müssen ausgefüllt werden.", InfoMessage.TYPES.ERROR);
         return;
       }
 
@@ -261,7 +261,7 @@ $(function() {
       var pw = this.deleteAccount.find("input[name='confirm-pw-delete']").val();
 
       if (_(pw).isEmpty()) {
-        new FailureMessage("Alle Felder müssen ausgefüllt werden.");
+        new InfoMessage("Alle Felder müssen ausgefüllt werden.", InfoMessage.TYPES.ERROR);
         return;
       }
 
@@ -273,39 +273,6 @@ $(function() {
     }
   });
 
-  $.Class('SuccessMessage', {
-    init: function(text) {
-      this.text = text;
-
-      var message = $($("#tmpl_successmessage").jqote({'text': text}));
-      message.hide();
-      message.find(".icon-remove").click(function(e) {
-        $(e.target).parents(".message").slideUp(function() {
-          $(e.target).parents(".message").remove();
-        });
-      });
-
-      message.appendTo("#message-area");
-      message.slideDown();
-    }
-  });
-
-  $.Class('FailureMessage', {
-    init: function(text) {
-      this.text = text;
-
-      var message = $($("#tmpl_failuremessage").jqote({'text': text}));
-      message.hide();
-      message.find(".icon-remove").click(function(e) {
-        $(e.target).parents(".message").slideUp(function() {
-          $(e.target).parents(".message").remove();
-        });
-      });
-
-      message.appendTo("#message-area");
-      message.slideDown();
-    }
-  });
 
   $.Class("ComboButton", {
     init: function(connection) {
@@ -572,6 +539,46 @@ $(function() {
 
     rendered: function() {
     },
+  });
+
+  Widget("InfoMessage", {
+    TYPES: {
+      ERROR: 0,
+      SUCCESS: 1,
+      INFO: 2
+    }
+  }, {
+    init: function(text, type) {
+      this._super("", function() {});
+
+      var message;
+      switch (type) {
+        case InfoMessage.TYPES.SUCCESS:
+          message = $($("#tmpl_successmessage").jqote({'text': text}));
+          break;
+        case InfoMessage.TYPES.ERROR:
+          message = $($("#tmpl_failuremessage").jqote({'text': text}));
+          break;
+        case InfoMessage.TYPES.INFO:
+          message = $($("#tmpl_infomessage").jqote({'text': text}));
+          break;
+        default:
+          message = $($("#tmpl_infomessage").jqote({'text': text}));
+      }
+
+      message.hide();
+      message.find(".icon-remove").click(function(e) {
+        $(this).parents(".message").parent().slideUp(250, function() {
+          $(this).parents(".message").parent().remove();
+          Widget.redrawAll();
+        });
+      });
+
+      message.appendTo($("#message-area"));
+      message.slideDown(500, 'linear', function() {
+        Widget.redrawAll();
+      });
+    }
   });
 
   Widget("DeleteBotButton", {
@@ -1331,15 +1338,15 @@ $(function() {
       var onSuccess = _.bind(function(type, id) {
         switch(type[2]) {
           case "delete":
-            new SuccessMessage("Account gelöscht.");
+            new InfoMessage("Account gelöscht.", InfoMessage.TYPES.SUCCESS);
             $(".bot-panel").remove();
             $("#staticpanels div[data-panelid='login']").show();
             break;
           case "email":
-            new SuccessMessage("Email Adresse aktualisiert.");
+            new InfoMessage("Email Adresse aktualisiert.", InfoMessage.TYPES.SUCCESS);
             break;
           case "password":
-            new SuccessMessage("Passwort aktualisiert.");
+            new SInfoMessage("Passwort aktualisiert.", InfoMessage.TYPES.SUCCESS);
             break;
         }
       });
@@ -1348,35 +1355,35 @@ $(function() {
         // TODO implement (handle all possible types/errors)
         switch(error) {
           case 11: // Username already taken
-            new FailureMessage("Der Nutzername ist bereits belegt.");
+            new InfoMessage("Der Nutzername ist bereits belegt.", InfoMessage.TYPES.ERROR);
             break;
           case 12: // Password to short
-            new FailureMessage("Das angegebene Passwort ist zu kurz.");
+            new InfoMessage("Das angegebene Passwort ist zu kurz.", InfoMessage.TYPES.ERROR);
             break;
           case 13: // invalid email address
-            new FailureMessage("Die angegebene Email Adresse ist ungültig.");
+            new InfoMessage("Die angegebene Email Adresse ist ungültig.", InfoMessage.TYPES.ERROR);
             break;
           case 21: // user not found
-            new FailureMessage("Kein Nutzer mit diesem Namen gefunden.");
+            new InfoMessage("Kein Nutzer mit diesem Namen gefunden.", InfoMessage.TYPES.ERROR);
             break;
           case 31: // session id not available
             break;
           case 32: // session timed out
             break;
           case 41: // password wrong
-            new FailureMessage("Das angegebene Passwort ist falsch.");
+            new InfoMessage("Das angegebene Passwort ist falsch.", InfoMessage.TYPES.ERROR);
             break;
           case 51: // bot already exists
-            new FailureMessage("Dieser Bot existiert bereits.");
+            new InfoMessage("Dieser Bot existiert bereits.", InfoMessage.TYPES.ERROR);
             break;
           case 52: // bot not found
-            new FailureMessage("Dieser Bot existiert nicht.");
+            new InfoMessage("Dieser Bot existiert nicht.", InfoMessage.TYPES.ERROR);
             break;
           case 53: // invalid configuration
-            new FailureMessage("Die abgesendete Konfiguation ist ungültig.");
+            new InfoMessage("Die abgesendete Konfiguation ist ungültig.", InfoMessage.TYPES.ERROR);
             break;
           case 54: // bot creation failed
-            new FailureMessage("Der Bot konnte nicht erstellt werden.");
+            new InfoMessage("Der Bot konnte nicht erstellt werden.", InfoMessage.TYPES.ERROR);
             break;
         }
       });
@@ -1475,7 +1482,7 @@ $(function() {
           interfaceMap[moduleName] = widgets;
       }, this);
 
-      new VTabs(containermap, wrapper)
+      new VTabs(containermap, wrapper);
 
       return {'panel': wrapper, 'widgets': interfaceMap};
     },

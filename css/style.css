@@ -6,11 +6,11 @@ body {
 }
 
 *:focus {
-    outline: none;
+  outline: none;
 }
 
 a:focus {
-    outline: none;
+  outline: none;
 }
 
 input, button {
@@ -481,6 +481,11 @@ select {
   margin-bottom: 10px;
   padding: 0 10px;
   line-height: 30px;
+  font-weight: bold;
+}
+
+.message .icon-remove {
+  cursor: pointer;
 }
 
 .message.success {
@@ -489,4 +494,8 @@ select {
 
 .message.failure {
   background: lightcoral;
+}
+
+.message.info {
+  background: lightgray;
 }
