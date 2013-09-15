@@ -1390,6 +1390,17 @@ $(function() {
           case 54: // bot creation failed
             new InfoMessage("Der Bot konnte nicht erstellt werden.", InfoMessage.TYPES.ERROR);
             break;
+          case 55: // bot in blocklist
+            new InfoMessage("Dieser Bot wird gerade schon erstellt.", InfoMessage.TYPES.ERROR);
+            break;
+          case 56: // bot not inactive
+            new InfoMessage("Nur inaktive Bots können reaktiviert werden.", InfoMessage.TYPES.ERROR);
+            break;
+          case 57: // bot not inactive
+            new InfoMessage("Es muss ein Proxy angegeben werden.", InfoMessage.TYPES.ERROR);
+            break;
+          default:
+            new InfoMessage(reason, InfoMessage.TYPES.ERROR);
         }
       });
 
