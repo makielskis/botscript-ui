@@ -1208,8 +1208,12 @@ $(function() {
         });
       });
 
-      // show first panel
-      $("#bot-switcher-dd a").get(-2).click();
+      // show last bot panel or create bot form
+      if ($("#bot-switcher-dd a").length < 2) {
+        $("#bot-switcher-dd a").first().click();
+      } else {
+        $("#bot-switcher-dd a").get(-2).click();
+      }
       $("#bot-switcher").first().click();
 
       if (!BotSwitcher.initialized) {
