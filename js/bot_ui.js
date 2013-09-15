@@ -1676,16 +1676,14 @@ $(function() {
 
     autoLogin: function() {
       var sid = $.cookie('bs_session');
-      if (_.isString(sid) && sid !== "") {
-        var request = {
-          'type': ['user'],
-          'arguments': {
-            'sid': sid,
-          }
-        };
+      var request = {
+        'type': ['user'],
+        'arguments': {
+          'sid': _.isString(sid) ? sid : "";
+        }
+      };
 
-        this.ws.send(JSON.stringify(request));
-      }
+      this.ws.send(JSON.stringify(request));
     },
 
     deleteBot: function(botid) {
