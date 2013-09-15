@@ -1209,9 +1209,8 @@ $(function() {
       });
 
       // show first panel
-      $("#bot-switcher-dd a").first().click();
+      $("#bot-switcher-dd a").get(-2).click();
       $("#bot-switcher").first().click();
-
 
       if (!BotSwitcher.initialized) {
         // Phone menu and logout
