@@ -1472,10 +1472,12 @@ $(function() {
             var logName = moduleName === "base" ? "Gesamt Log" : "Modul Log: " + moduleName;
             widgets["modulelog"] = new Log(logName);
 
+            // Add extra buttons (not in packages)
             if (moduleName === "base") {
-              // Add extra delete button
               widgets["delete"] = new DeleteBotButton("Bot löschen", _.bind(this.deleteBotListener, this, botid));
-              widgets["reactivate"] = new ReactivateButton("Bot aktivieren", _.bind(this.reactivateListener, this, botid));
+              if (this.botdata[botid].inactive) {
+                widgets["reactivate"] = new ReactivateButton("Bot aktivieren", _.bind(this.reactivateListener, this, botid));
+              }
             }
 
           }, this);
