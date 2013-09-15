@@ -432,9 +432,11 @@ $(function() {
             });
           });
 
-          $('html, body').animate({
-	          scrollTop: ui.newPanel.offset().top
-          }, 1000);
+          if (window.innerWidth <= 768) {
+            $('html, body').animate({
+	            scrollTop: ui.newPanel.offset().top
+            }, 1000);
+          }
 
         }, this)
       });
