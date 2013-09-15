@@ -1683,7 +1683,7 @@ $(function() {
       var request = {
         'type': ['user'],
         'arguments': {
-          'sid': _.isString(sid) ? sid : "";
+          'sid': _.isString(sid) ? sid : ""
         }
       };
 
