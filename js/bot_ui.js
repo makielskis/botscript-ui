@@ -1698,7 +1698,7 @@ $(function() {
       var request = {
         'type': ['user'],
         'arguments': {
-          'sid': _.isString(sid) ? sid : ""
+          'sid': _.isString(sid) && !_.isEmpty(sid) ? sid : "m4k13l5k15b07f4k3535510n"
         }
       };
 
