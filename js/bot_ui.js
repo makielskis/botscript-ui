@@ -1218,17 +1218,6 @@ $(function() {
       }
       $("#bot-switcher").first().click();
 
-      if (!BotSwitcher.initialized) {
-        // Phone menu and logout
-        $("#phonemenu-btn").click(function() {
-          $("#phonemenu-dd").toggle();
-        });
-
-        $("#phonemenu-dd a").click(function() {
-          $("#phonemenu-dd").hide();
-        });
-      }
-
       BotSwitcher.initialized = true;
     }
   }, {});

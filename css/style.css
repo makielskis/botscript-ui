@@ -5,6 +5,14 @@ body {
   min-width: 260px;
 }
 
+* {
+  -moz-user-select: none;
+  -ms-user-select: none;
+  -o-user-select: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
 *:focus {
   outline: none;
 }
@@ -30,7 +38,6 @@ input, button {
 }
 
 #app-title > div {
-  float: left;
   box-sizing: border-box;
   -moz-box-sizing: border-box;
 }
@@ -188,6 +195,14 @@ input {
   overflow: hidden;
 }
 
+.log * {
+  -moz-user-select: text;
+  -ms-user-select: text;
+  -o-user-select: text;
+  -webkit-user-select: text;
+  user-select: text;
+}
+
 .log .error {
   color: rgb(255, 82, 82);
 }
@@ -322,19 +337,13 @@ input {
   text-align: right;
 }
 
-#phonemenu-btn {
-  padding: 5px;
-  width: 20px;
+#bot-switcher {
+  float: left;
 }
 
-#bot-switcher, #phonemenu-btn, .logoutbtn {
+#bot-switcher, .logoutbtn {
   padding: 5px;
   cursor: pointer;
-  -moz-user-select: none;
-  -ms-user-select: none;
-  -o-user-select: none;
-  -webkit-user-select: none;
-  user-select: none;
 }
 
 #bot-switcher-dd, #phonemenu-dd {
@@ -348,11 +357,6 @@ input {
   z-index: 1;
   box-shadow: rgba(0, 0, 0, 0.4) 0px 2px 6px 0px;
   display: none;
-}
-
-#phonemenu-dd {
-  width: 30%;
-  float: right;
 }
 
 #bot-switcher-dd ul, #phonemenu-dd ul {
@@ -391,25 +395,21 @@ input {
 #selected-bot {
   padding: 5px;
   text-align: right;
-  width: calc(70% - 32px);
-  width: -webkit-calc(70% - 32px);
-  width: -moz-calc(70% - 32px);
-  width: -o-calc(70% - 32px);
+  float: right;
 }
 
 #selected-bot * {
   width: auto;
 }
 
- #selected-bot .bs-game {
-  padding-right: 5px;
- }
-
 .bs-server {
   display: inline-block;
   text-align: right;
-  width: 32%;
   text-transform:uppercase;
+}
+
+#bot-switcher-dd .bs-server {
+  float: right;
 }
 
 .bs-server:before {

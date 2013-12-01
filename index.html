@@ -19,27 +19,13 @@
           <i class="icon-caret-down"></i>
         </span>
       </div>
-      <div id="selected-bot"></div>
-      <div id="combobtn" class="btn logoutbtn hidden-phone">
+      <div id="combobtn" class="btn logoutbtn">
         <i class="icon-signout"></i><span> Abmelden</span>
       </div>
-      <span id="phonemenu-btn" class="visible-phone btn pull-right">
-        <i class="icon-align-justify"></i><span></span>
-      </span>
+      <div id="selected-bot"></div>
     </div>
     <div class="row-fluid">
       <div class="span4" id="bot-switcher-dd">
-      </div>
-    </div>
-    <div class="row-fluid">
-      <div class="span4" id="phonemenu-dd">
-        <ul class="unstyled">
-        <li>
-        <a class="logoutbtn" href="#">
-        <i class="icon-signout"></i><span> Abmelden</span>
-        </a>
-        </li>
-        <ul>
       </div>
     </div>
     <div id="app">
@@ -441,7 +427,7 @@
           <a href="#" data-botid="<%= encodedId %>">
             <span class="bs-game"><%= splitId[0] %>:</span>
             <span><b><%= splitId[2] %></b></span>
-            <span class="pull-right bs-server">
+            <span class="bs-server">
               <span><%= splitId[1] %></span>
             </span>
           </a>
