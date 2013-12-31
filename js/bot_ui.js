@@ -1459,7 +1459,7 @@ $(function() {
       // each module
       _.each(this.botdata[botid]['modules'], function(moduleconfig, moduleName) {
           // Skip modules (except base) when inactive
-          if (this.botdata[botid].inactive === true && moduleName != "base") {
+          if (this.botdata[botid].inactive === "1" && moduleName != "base") {
             return;
           }
 
@@ -1505,7 +1505,7 @@ $(function() {
             // Add extra buttons (not in packages)
             if (moduleName === "base") {
               widgets["delete"] = new DeleteBotButton("Bot löschen", _.bind(this.deleteBotListener, this, botid));
-              if (this.botdata[botid].inactive) {
+              if (this.botdata[botid].inactive == "1") {
                 widgets["reactivate"] = new ReactivateButton("Bot aktivieren", _.bind(this.reactivateListener, this, botid));
               }
             }
@@ -1677,7 +1677,7 @@ $(function() {
 
     createNewBot: function(playername, password, botpackage, server, proxies) {
       var request = {
-        'type': ['user', 'bot', 'create'],
+        'type': ['user', 'bot', 'create', 'new'],
         'arguments': {
           'sid': $.cookie('bs_session'),
           'config': JSON.stringify({
@@ -1736,7 +1736,7 @@ $(function() {
 
     reactivateBot: function(botid, proxies) {
       var request = {
-        'type': ['user', 'bot', 'reactivate'],
+        'type': ['user', 'bot', 'create', 'reactivate'],
         'arguments': {
           'sid': $.cookie('bs_session'),
           'identifier': botid,
