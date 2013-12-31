@@ -224,18 +224,19 @@ $(function() {
       this.connection = connection;
 
       this.forms = {};
-      forms["email"] = this.parent.find();
-      forms["password"] = this.parent.find();
-      forms["delete"] = this.parent.find();
+      this.forms["email"] = this.parent.find("div[data-formid='email']");
+      this.forms["password"] = this.parent.find("div[data-formid='password']");
+      this.forms["delete"] = this.parent.find("div[data-formid='delete_acc']");
 
-      this.form.email.find("button[name='update-email']").click(this.callback(this.submitEmail));
-      this.form.password.find("button[name='update-password']").click(this.callback(this.submitPassword));
-      this.form.deleteAccount.find("button[name='delete-account']").click(this.callback(this.submitDelete));
+      this.forms['email'].find("button[name='update-email']").click(this.callback(this.submitEmail));
+      this.forms['password'].find("button[name='update-password']").click(this.callback(this.submitPassword));
+      this.forms['delete'].find("button[name='delete-account']").click(this.callback(this.submitDelete));
     },
 
     submitEmail: function() {
-      var email = this.email.find("input[name='new-email']").val();
-      var password = this.email.find("input[name='confirm-pw-email']").val();
+      // TODO email input validation
+      var email = this.forms['email'].find("input[name='new-email']").val();
+      var password = this.forms['email'].find("input[name='confirm-pw-email']").val();
 
       if (_(email).isEmpty() || _(password).isEmpty()) {
         new InfoMessage("Alle Felder müssen ausgefüllt werden.", InfoMessage.TYPES.ERROR);
@@ -246,8 +247,8 @@ $(function() {
     },
 
     submitPassword: function() {
-      var new_pw = this.password.find("input[name='new-pw']").val();
-      var cur_pw = this.password.find("input[name='confirm-pw-pw']").val();
+      var new_pw = this.forms['password'].find("input[name='new-pw']").val();
+      var cur_pw = this.forms['password'].find("input[name='confirm-pw-pw']").val();
 
       if (_(new_pw).isEmpty() || _(cur_pw).isEmpty()) {
         new InfoMessage("Alle Felder müssen ausgefüllt werden.", InfoMessage.TYPES.ERROR);
@@ -258,14 +259,14 @@ $(function() {
     },
 
     submitDelete: function() {
-      var pw = this.deleteAccount.find("input[name='confirm-pw-delete']").val();
+      var pw = this.forms['delete'].find("input[name='confirm-pw-delete']").val();
 
       if (_(pw).isEmpty()) {
         new InfoMessage("Alle Felder müssen ausgefüllt werden.", InfoMessage.TYPES.ERROR);
         return;
       }
 
-      this.connection.deleteAccount(password);
+      this.connection.deleteAccount(pw);
     },
 
     displayNewEmail: function(email) {
@@ -273,6 +274,26 @@ $(function() {
     }
   });
 
+  $.Class("AccountButton", {
+    init: function(connection) {
+      this.connection = connection;
+      this.element = $("#accountbtn");
+
+      this.element.click(this.callback(this.onclick));
+    },
+
+    onclick: function() {
+      $("#staticpanels div[data-panelid='account']").show();
+    },
+
+    hide: function() {
+      this.element.hide();
+    },
+
+    show: function() {
+      this.element.show();
+    }
+  });
 
   $.Class("ComboButton", {
     init: function(connection) {
@@ -1241,13 +1262,19 @@ $(function() {
       // setup forms
       new LoginForm(this.connection);
       new CreateAccountForm(this.connection);
+      new AccountSettingsForm(this.connection);
+
       this.combobtn = new ComboButton();
       this.combobtn.setRegister();
+
+      this.accountbtn = new AccountButton();
+      this.accountbtn.hide();
 
       // when packages come in setup new bot form
       var onPackages = _.bind(function(packages) {
         this.createbotForm = new CreateBotForm(this.connection, packages);
         this.combobtn.setLogout();
+        this.accountbtn.show();
       }, this);
 
       // when bots come in create interface
@@ -1334,13 +1361,14 @@ $(function() {
           case "delete":
             new InfoMessage("Account gelöscht.", InfoMessage.TYPES.SUCCESS);
             $(".bot-panel").remove();
+            $("#staticpanels .widgetcontainer").hide();
             $("#staticpanels div[data-panelid='login']").show();
             break;
           case "email":
             new InfoMessage("Email Adresse aktualisiert.", InfoMessage.TYPES.SUCCESS);
             break;
           case "password":
-            new SInfoMessage("Passwort aktualisiert.", InfoMessage.TYPES.SUCCESS);
+            new InfoMessage("Passwort aktualisiert.", InfoMessage.TYPES.SUCCESS);
             break;
         }
       });
@@ -1737,7 +1765,7 @@ $(function() {
         'type': ['user', 'update', 'delete'],
         'arguments': {
           'sid': $.cookie('bs_session'),
-          'password': password
+          'current_pw': password
         }
       };
 

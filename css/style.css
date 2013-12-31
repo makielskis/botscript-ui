@@ -42,10 +42,6 @@ input, button {
   -moz-box-sizing: border-box;
 }
 
-#combobtn {
-  float: right !important;
-}
-
 #invader {
   height: 24px;
   width: 24px;
@@ -331,10 +327,11 @@ input {
 }
 
 
-.logoutbtn {
+.rightbtn {
   padding: 5px;
   color: #333;
   text-align: right;
+  float: right !important;
 }
 
 #bot-switcher {
@@ -456,10 +453,6 @@ select {
 
   .ui-tabs-nav li.ui-state-active {
     border-width: 1px 0 1px 1px;
-  }
-
-  #selected-bot {
-    width: 55%;
   }
 }
 
