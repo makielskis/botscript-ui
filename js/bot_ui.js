@@ -1471,37 +1471,39 @@ $(function() {
 
           // each property
           _.each(moduleconfig, function(propertyvalue, propertyname) {
-            var inputSpecs = this.getInputSpecs(botPackage, moduleName, propertyname);
-            if (inputSpecs !== undefined) {
-              var inputType = inputSpecs["input_type"];
+            // Skip settings when infactive
+            if (this.botdata[botid].inactive == "0") {
+              var inputSpecs = this.getInputSpecs(botPackage, moduleName, propertyname);
+              if (inputSpecs !== undefined) {
+                var inputType = inputSpecs["input_type"];
 
-              var displayName = inputSpecs["display_name"];
+                var displayName = inputSpecs["display_name"];
 
-              var initValue1, initValue2, initValue3, initValue4;
-              switch(inputType) {
-                case "dropdown":
-                  initValue1 = moduleconfig[propertyname + "_from"];
-                  initValue2 = propertyvalue;
-                  break;
-                case "list_list":
-                  initValue1 = moduleconfig[propertyname + "_from"];;
-                  initValue2 = propertyvalue;
-                  break;
-                case "slider":
-                  var limits = inputSpecs.value_range.split(",");
-                  initValue1 = parseFloat(limits[0]);
-                  initValue2 = parseFloat(limits[1]);
-                  initValue3 = 0.1;
-                  initValue4 = parseFloat(moduleconfig[propertyname]);
-                  break;
-                default:
-                  initValue1 = propertyvalue;
+                var initValue1, initValue2, initValue3, initValue4;
+                switch(inputType) {
+                  case "dropdown":
+                    initValue1 = moduleconfig[propertyname + "_from"];
+                    initValue2 = propertyvalue;
+                    break;
+                  case "list_list":
+                    initValue1 = moduleconfig[propertyname + "_from"];;
+                    initValue2 = propertyvalue;
+                    break;
+                  case "slider":
+                    var limits = inputSpecs.value_range.split(",");
+                    initValue1 = parseFloat(limits[0]);
+                    initValue2 = parseFloat(limits[1]);
+                    initValue3 = 0.1;
+                    initValue4 = parseFloat(moduleconfig[propertyname]);
+                    break;
+                  default:
+                    initValue1 = propertyvalue;
+                }
+
+                var newInput = new InterfaceCreator.inputMap[inputType](displayName, _.bind(this.changeListener, this, botid, moduleName, propertyname), initValue1, initValue2, initValue3, initValue4);
+                widgets[moduleName + "_" + propertyname] = newInput;
               }
-
-              var newInput = new InterfaceCreator.inputMap[inputType](displayName, _.bind(this.changeListener, this, botid, moduleName, propertyname), initValue1, initValue2, initValue3, initValue4);
-              widgets[moduleName + "_" + propertyname] = newInput;
             }
-
             // Add extra Log Widget
             var logName = moduleName === "base" ? "Gesamt Log" : "Modul Log: " + moduleName;
             widgets["modulelog"] = new Log(logName);
