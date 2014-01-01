@@ -283,6 +283,10 @@ $(function() {
     },
 
     onclick: function() {
+      $("#selected-bot").html($(event.currentTarget).html());
+
+      $("#staticpanels .widgetcontainer").hide();
+      $("#app .bot-panel").hide();
       $("#staticpanels div[data-panelid='account']").show();
     },
 
@@ -516,7 +520,7 @@ $(function() {
           return;
         }
         this.element.append(widget.element);
-        widget.rendered();
+          widget.rendered();
       }, this);
 
       // append log
