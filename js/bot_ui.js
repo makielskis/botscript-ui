@@ -282,7 +282,7 @@ $(function() {
       this.element.click(this.callback(this.onclick));
     },
 
-    onclick: function() {
+    onclick: function(event) {
       $("#selected-bot").html($(event.currentTarget).html());
 
       $("#staticpanels .widgetcontainer").hide();
