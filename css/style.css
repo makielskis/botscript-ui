@@ -326,7 +326,6 @@ input {
   text-decoration: none;
 }
 
-
 .rightbtn {
   padding: 5px;
   color: #333;
@@ -428,6 +427,10 @@ input {
 textarea.btn {
   background: white;
   resize: none;
+}
+
+textarea.btn:disabled {
+  background: #eee;
 }
 
 select {

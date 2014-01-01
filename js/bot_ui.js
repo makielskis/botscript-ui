@@ -734,12 +734,27 @@ $(function() {
       this._super(label, callback, initValue);
 
       var value = initValue || "";
-      this.element = $($("#tmpl_textarea").jqote({label: this.label, value: value}));
+      this.element = $($("#tmpl_textarea").jqote({label: this.label,
+                                                  value: value,
+                                                  btn_text: "speichern"}));
       this.element.attr("id", this.id);
       this.input = this.element.find("textarea");
+      this.button = this.element.find("button");
       this.placeholder = this.element.find("div.placeholder").hide();
 
-      this.input.blur(this.callback(this.onEdit));
+      this.button.click(this.callback(this.onEdit));
+    },
+
+    onEdit: function() {
+      this.input.attr("disabled", true);
+      this.button.attr("disabled", true).hide();
+      this.placeholder.show();
+      this.onChange(this.input.val());
+    },
+
+    update: function(newValue) {
+      this.button.removeAttr("disabled").show();
+      this._super(newValue);
     }
   });
 
