@@ -270,7 +270,7 @@ $(function() {
     },
 
     displayNewEmail: function(email) {
-      this.form.email.find("#current-email").html(email);
+      this.forms.email.find("#current-email").html(email);
     }
   });
 
@@ -1281,7 +1281,7 @@ $(function() {
       // setup forms
       new LoginForm(this.connection);
       new CreateAccountForm(this.connection);
-      new AccountSettingsForm(this.connection);
+      this.accountSettingsForm = new AccountSettingsForm(this.connection);
 
       this.combobtn = new ComboButton();
       this.combobtn.setRegister();
@@ -1360,12 +1360,10 @@ $(function() {
         }
       }, this);
 
-      var onAccount = _.bind(function(action, success) {
+      var onAccount = _.bind(function(args) {
         // display a coresponding message
-        if (action === "create_bot") {
-          if (_.isString(success)) {
-            this.createbotForm.logWidget.update("[ERROR] " + success);
-          }
+        if (_.isString(args.email)) {
+          this.accountSettingsForm.displayNewEmail(args.email);
         }
       }, this);
 
@@ -1421,10 +1419,10 @@ $(function() {
             new InfoMessage("Dieser Bot existiert nicht.", InfoMessage.TYPES.ERROR);
             break;
           case 53: // invalid configuration
-            new InfoMessage("Die abgesendete Konfiguation ist ungültig.", InfoMessage.TYPES.ERROR);
+            new InfoMessage("Die abgesendete Konfiguation ist ungültig: " + reason, InfoMessage.TYPES.ERROR);
             break;
           case 54: // bot creation failed
-            new InfoMessage("Der Bot konnte nicht erstellt werden.", InfoMessage.TYPES.ERROR);
+            new InfoMessage("Der Bot konnte nicht erstellt werden: " + reason, InfoMessage.TYPES.ERROR);
             break;
           case 55: // bot in blocklist
             new InfoMessage("Dieser Bot wird gerade schon erstellt.", InfoMessage.TYPES.ERROR);
@@ -1643,6 +1641,9 @@ $(function() {
           case "update":
             var splitKey = msg.arguments.key.split("_", 1);
             this.onUpdate(msg.arguments.identifier, splitKey[0], msg.arguments.key, msg.arguments.value);
+            break;
+          case "account":
+            this.onAccount(msg.arguments);
             break;
         }
       }
