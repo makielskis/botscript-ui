@@ -279,7 +279,14 @@ $(function() {
       this.connection = connection;
       this.element = $("#accountbtn");
 
+      this.invisible = false;
+
       this.element.click(this.callback(this.onclick));
+    },
+
+    setHidden: function() {
+      this.invisible = true;
+      this.element.hide();
     },
 
     onclick: function(event) {
@@ -295,7 +302,7 @@ $(function() {
     },
 
     show: function() {
-      this.element.show();
+      !this.invisible && this.element.show();
     }
   });
 
@@ -306,6 +313,10 @@ $(function() {
       this.role = "";
 
       this.element.click(this.callback(this.onclick));
+    },
+
+    setHidden: function() {
+      this.element.hide();
     },
 
     setLogout: function() {
@@ -1289,11 +1300,16 @@ $(function() {
       this.accountbtn = new AccountButton();
       this.accountbtn.hide();
 
-      // when packages come in setup new bot form
+      // when packages come in setup create bot form
       var onPackages = _.bind(function(packages) {
         this.createbotForm = new CreateBotForm(this.connection, packages);
         this.combobtn.setLogout();
         this.accountbtn.show();
+
+        if (this.connection.local) {
+          this.combobtn.setHidden();
+          this.accountbtn.setHidden();
+        }
       }, this);
 
       // when bots come in create interface
@@ -1597,9 +1613,25 @@ $(function() {
     // empty constructor
     init: function() {},
 
+    local: false,
+
     // connect the socket
     connect: function() {
-      this.ws = new WebSocket('ws://127.0.0.1:9003');
+      function parseURL() {
+        var map = {};
+        _.each(location.search.slice(1).split("&"), function(pair) {
+         var split = _.map(pair.split("="), decodeURIComponent);
+         map[split[0]] = split[1];
+        });
+        return map;
+      };
+
+      var parameters = parseURL();
+      var host = _.isString(parameters.host) ? parameters.host : "127.0.0.1";
+      var port = _.isString(parameters.port) ? parameters.port : "9003";
+      this.local = host === "127.0.0.1" || host === "localhost";
+
+      this.ws = new WebSocket("ws://" + host + ":" + port);
       this.ws.onopen = _.bind(this.onopen, this);
       this.ws.onmessage = _.bind(this.onmessage, this);
     },
