@@ -1634,10 +1634,13 @@ $(function() {
       this.ws = new WebSocket("ws://" + host + ":" + port);
       this.ws.onopen = _.bind(this.onopen, this);
       this.ws.onmessage = _.bind(this.onmessage, this);
+      this.ws.onerror = _.bind(this.onerror, this);
     },
 
     // called when the socket is connected
     onopen: function(event) {
+      $("#connection-status i").hide();
+      $("#connection-status .info").show();
       this.autoLogin();
     },
 
@@ -1691,6 +1694,12 @@ $(function() {
       } catch (exception) {
         throw exception;
       }
+    },
+
+    onerror: function() {
+      $("#connection-status i").hide();
+      $("#connection-status .error").show();
+      console.log(arguments);
     },
 
     createInterface: function() {

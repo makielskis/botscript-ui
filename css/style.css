@@ -199,16 +199,12 @@ input {
   user-select: text;
 }
 
-.log .error {
+.error {
   color: rgb(255, 82, 82);
 }
 
-.log .info {
+.info {
   color: rgb(82, 255, 103);
-}
-
-.log.debug {
-  color: white;
 }
 
 .collapsible-header i {
