@@ -835,8 +835,14 @@ $(function() {
     update: function(update, isListUpdate) {
       if (isListUpdate) {
         update = Util.splitString(update);
+        var lastValue = this.select.find("option:selected").text();
         this.select.empty().append($($("#tmpl_dropdown_items").jqote({list: update})));
+        this.select.find('option').filter(function () { return $(this).html() == lastValue; }).attr("selected", true);
       } else {
+        if (this.select.find('option[text="' + update + '"]').length === 0) {
+          this.select.append($($("#tmpl_dropdown_items").jqote({list: [update]})));
+        }
+        this.select.find("option").attr("selected", false);
         this.select.find("option:contains(" + update + ")").attr("selected", true);
       }
       this.select.removeAttr("disabled");
