@@ -1369,7 +1369,9 @@ $(function() {
         }
 
         // update coresponding widget if existing (might not exist if bot is newly created)
-        if (_.isObject(this.widgets[botid])) {
+        if (_.isObject(this.widgets[botid])
+            && _.isObject(this.widgets[botid][module])
+            && _.isObject(this.widgets[botid][module][property])) {
           var isFromProperty = false;
           if (property.slice(-5) === "_from") {
             property = property.slice(0, -5);
