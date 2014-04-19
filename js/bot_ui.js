@@ -836,13 +836,13 @@ $(function() {
       if (isListUpdate) {
         update = Util.splitString(update);
         update = _.filter(update, function(item) {
-          return item.charAt(0) != "$";
+          return item.charAt(0) != "$" && item.charAt(0) != "^";
         });
         var lastValue = this.select.find("option:selected").text();
         this.select.empty().append($($("#tmpl_dropdown_items").jqote({list: update})));
         this.select.find('option').filter(function() { return $(this).html() == lastValue; }).attr("selected", true);
       } else {
-        if (this.select.find('option[text="' + update + '"]').length === 0 && update.charAt(0) != "$") {
+        if (this.select.find('option[text="' + update + '"]').length === 0 && update.charAt(0) != "$" && update.charAt(0) != "^") {
           this.select.append($($("#tmpl_dropdown_items").jqote({list: [update]})));
         }
         this.select.find("option").attr("selected", false);
